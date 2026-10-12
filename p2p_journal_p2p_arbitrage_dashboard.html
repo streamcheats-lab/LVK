@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>P2P Журнал / P2P Arbitrage Dashboard</title>
+    
+    <!-- PWA iOS & Mobile Web App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="P2P Журнал">
+    <meta name="theme-color" content="#0b0e14">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0b0e14',
+                        cardBg: '#121721',
+                        borderBg: '#1e2638',
+                        neonGreen: '#00ff88',
+                        neonGreenDark: '#10b981',
+                        accentBlue: '#3b82f6',
+                        accentRed: '#ef4444',
+                        textMuted: '#9ca3af'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Chart.js & FontAwesome CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0e14;
+            color: #f3f4f6;
+            -webkit-tap-highlight-color: transparent;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0e14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e2638;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2b364e;
+        }
+
+        .glow-neon {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
+        }
+        
+        .animate-pop {
+            animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Safe area spacing for mobile navigation bar */
+        .pb-safe {
+            padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-emerald-500 selection:text-white pb-safe sm:pb-0">
+
+    <header class="sticky top-0 z-30 bg-[#121721]/90 backdrop-blur-md border-b border-borderBg px-4 lg:px-8 py-3.5 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-950/40 font-bold">
+                <i class="fa-solid fa-chart-line text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-base sm:text-lg leading-tight tracking-wide text-white flex items-center gap-2">
+                    P2P Журнал
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">PRO</span>
+                </h1>
+                <p class="text-[11px] text-textMuted">Арбітраж & Фінансовий обліковий журнал</p>
+            </div>
+        </div>
+        
+        <!-- Header Controls -->
+        <div class="flex items-center gap-2 sm:gap-3">
+            <button onclick="openInitialDepositModal()" title="Налаштувати початковий депозит" class="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-borderBg/60 hover:bg-borderBg text-gray-300 text-xs transition flex items-center gap-1.5 border border-white/5">
+                <i class="fa-solid fa-piggy-bank text-emerald-400"></i>
+                <span class="hidden sm:inline">Депозит</span>
+            </button>
+
+            <button onclick="exportData()" title="Експорт JSON" class="p-2 sm:px-3 sm:py-2 rounded-xl bg-borderBg/60 hover:bg-borderBg text-gray-300 text-xs transition flex items-center gap-1.5 border border-white/5">
+                <i class="fa-solid fa-file-export"></i>
+                <span class="hidden sm:inline">Експорт</span>
+            </button>
+
+            <label class="p-2 sm:px-3 sm:py-2 rounded-xl bg-borderBg/60 hover:bg-borderBg text-gray-300 text-xs transition flex items-center gap-1.5 border border-white/5 cursor-pointer">
+                <i class="fa-solid fa-file-import"></i>
+                <span class="hidden sm:inline">Імпорт</span>
+                <input type="file" id="importFileInput" onchange="importData(event)" accept=".json" class="hidden">
+            </label>
+
+            <button onclick="openModal()" class="px-3 py-2 sm:px-4 sm:py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-xs sm:text-sm transition shadow-lg shadow-emerald-900/30 flex items-center gap-2 active:scale-95">
+                <i class="fa-solid fa-plus"></i>
+                <span class="hidden sm:inline">Додати угоду</span>
+                <span class="sm:hidden">Угода</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
+
+        <!-- STATS OVERVIEW CARDS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            
+            <!-- Card 1: Balance / Initial Deposit -->
+            <div class="bg-cardBg border border-borderBg rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden group">
+                <div class="flex justify-between items-start">
+                    <span class="text-[11px] text-textMuted font-medium uppercase tracking-wider">Поточний бюджет</span>
+                    <button onclick="openInitialDepositModal()" class="text-textMuted hover:text-emerald-400 text-xs" title="Змінити початковий бюджет">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                </div>
+                <div class="mt-3">
+                    <div id="stat-current-budget" class="text-lg sm:text-2xl font-bold text-white font-mono">0.00 ₴</div>
+                    <div id="stat-initial-budget" class="text-xs text-textMuted font-medium mt-1">Початковий: 0 ₴</div>
+                </div>
+            </div>
+
+            <!-- Card 2: Total Turnover -->
+            <div class="bg-cardBg border border-borderBg rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden group">
+                <span class="text-[11px] text-textMuted font-medium uppercase tracking-wider">Загальний оборот</span>
+                <div class="mt-3">
+                    <div id="stat-turnover" class="text-lg sm:text-2xl font-bold text-white font-mono">0.00 ₴</div>
+                    <div id="stat-turnover-usd" class="text-xs text-emerald-400 font-medium mt-1 font-mono">≈ $0.00</div>
+                </div>
+            </div>
+
+            <!-- Card 3: Total Profit -->
+            <div class="bg-cardBg border border-borderBg rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden group">
+                <span class="text-[11px] text-textMuted font-medium uppercase tracking-wider">Загальний прибуток</span>
+                <div class="mt-3">
+                    <div id="stat-profit" class="text-lg sm:text-2xl font-bold text-emerald-400 font-mono">+0.00 ₴</div>
+                    <div id="stat-profit-usd" class="text-xs text-emerald-500/80 font-medium mt-1 font-mono">≈ $0.00</div>
+                </div>
+            </div>
+
+            <!-- Card 4: Average ROI & Deals Count -->
+            <div class="bg-cardBg border border-borderBg rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden group">
+                <span class="text-[11px] text-textMuted font-medium uppercase tracking-wider">Середній ROI %</span>
+                <div class="mt-3">
+                    <div id="stat-roi" class="text-lg sm:text-2xl font-bold text-teal-300 font-mono">0.00%</div>
+                    <div id="stat-deals-count" class="text-xs text-textMuted font-medium mt-1">Всього угод: 0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERIOD FILTERS TOOLBAR -->
+        <div class="bg-cardBg border border-borderBg p-2 sm:p-3 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
+                <button onclick="setFilter('today')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-medium transition whitespace-nowrap bg-emerald-500 text-white" data-filter="today">Сьогодні</button>
+                <button onclick="setFilter('yesterday')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-medium transition whitespace-nowrap text-textMuted hover:bg-borderBg" data-filter="yesterday">Вчора</button>
+                <button onclick="setFilter('7days')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-medium transition whitespace-nowrap text-textMuted hover:bg-borderBg" data-filter="7days">7 днів</button>
+                <button onclick="setFilter('30days')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-medium transition whitespace-nowrap text-textMuted hover:bg-borderBg" data-filter="30days">30 днів</button>
+                <button onclick="setFilter('month')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-medium transition whitespace-nowrap text-textMuted hover:bg-borderBg" data-filter="month">Цей місяць</button>
+                <button onclick="setFilter('last_month')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-medium transition whitespace-nowrap text-textMuted hover:bg-borderBg" data-filter="last_month">Минулий місяць</button>
+                <button onclick="setFilter('all')" class="filter-btn px-3 py-1.5 rounded-xl text-xs font-medium transition whitespace-nowrap text-textMuted hover:bg-borderBg" data-filter="all">Весь период</button>
+            </div>
+            
+            <div class="flex items-center justify-between w-full md:w-auto gap-2 text-xs text-textMuted">
+                <span id="active-filter-label" class="bg-borderBg/60 px-3 py-1 rounded-lg border border-white/5 font-medium">Фільтр: Сьогодні</span>
+                <button onclick="clearAllData()" class="text-xs text-rose-400/80 hover:text-rose-400 transition flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-rose-500/10">
+                    <i class="fa-solid fa-trash-can"></i> Скинути
+                </button>
+            </div>
+        </div>
+
+        <!-- CHARTS SECTION -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Profit Chart -->
+            <div class="bg-cardBg border border-borderBg rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xs sm:text-sm font-semibold text-gray-200 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-emerald-400"></i> Прибуток по днях (₴)
+                    </h2>
+                </div>
+                <div class="h-56 sm:h-64 relative">
+                    <canvas id="profitChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Turnover Chart -->
+            <div class="bg-cardBg border border-borderBg rounded-2xl p-4 sm:p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xs sm:text-sm font-semibold text-gray-200 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-column text-teal-400"></i> Оборот по днях (₴)
+                    </h2>
+                </div>
+                <div class="h-56 sm:h-64 relative">
+                    <canvas id="turnoverChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRANSACTIONS HISTORY TABLE -->
+        <div class="bg-cardBg border border-borderBg rounded-2xl overflow-hidden shadow-xl">
+            <div class="p-4 sm:p-5 border-b border-borderBg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-emerald-400"></i> Історія операцій
+                    </h2>
+                    <p class="text-xs text-textMuted mt-0.5">Всі арбітражні угоди за обраний період</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="relative w-full sm:w-56">
+                        <input type="text" id="tableSearch" oninput="renderDashboard()" placeholder="Пошук угод..." class="bg-darkBg border border-borderBg rounded-xl px-3 py-1.5 pl-8 text-xs text-gray-200 focus:outline-none focus:border-emerald-500 w-full">
+                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-textMuted text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desktop Table View -->
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-darkBg/80 text-textMuted border-b border-borderBg uppercase font-medium tracking-wider">
+                            <th class="p-3.5">Дата / Час</th>
+                            <th class="p-3.5">Тип</th>
+                            <th class="p-3.5">Бюджет (₴ / $)</th>
+                            <th class="p-3.5">Курс Вхід ➔ Вихід</th>
+                            <th class="p-3.5">Прибуток (₴)</th>
+                            <th class="p-3.5">ROI %</th>
+                            <th class="p-3.5 text-right">Дії</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dealsTableBody" class="divide-y divide-borderBg text-gray-300">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Card View -->
+            <div id="dealsMobileList" class="md:hidden divide-y divide-borderBg">
+                <!-- Populated via JS -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="emptyState" class="p-12 text-center text-textMuted hidden">
+                <i class="fa-regular fa-folder-open text-4xl mb-3 text-borderBg"></i>
+                <p class="text-sm">Угод за обраний період не знайдено</p>
+                <button onclick="openModal()" class="mt-3 px-3.5 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20 text-xs hover:bg-emerald-500/20 transition font-medium">
+                    Додати першу угоду
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- MOBILE BOTTOM BAR (PWA Style for iPhone) -->
+    <div class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#121721]/95 backdrop-blur-lg border-t border-borderBg px-6 py-2 flex justify-around items-center">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center gap-1 text-emerald-400">
+            <i class="fa-solid fa-house-chimney text-base"></i>
+            <span class="text-[10px] font-medium">Дашборд</span>
+        </button>
+
+        <button onclick="openModal()" class="w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-950/60 -translate-y-3 border-4 border-darkBg active:scale-90 transition">
+            <i class="fa-solid fa-plus text-lg"></i>
+        </button>
+
+        <button onclick="openInitialDepositModal()" class="flex flex-col items-center gap-1 text-textMuted hover:text-white">
+            <i class="fa-solid fa-wallet text-base"></i>
+            <span class="text-[10px] font-medium">Баланс</span>
+        </button>
+    </div>
+
+    <!-- ADD / EDIT DEAL MODAL -->
+    <div id="dealModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-cardBg border border-borderBg rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-pop flex flex-col max-h-[90vh]">
+            
+            <!-- Modal Header -->
+            <div class="p-4 sm:p-5 border-b border-borderBg flex justify-between items-center bg-darkBg/60">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <i class="fa-solid fa-plus-circle"></i>
+                    </div>
+                    <h3 id="modalTitle" class="font-bold text-base text-white">Додати нову угоду</h3>
+                </div>
+                <button onclick="closeModal()" class="text-textMuted hover:text-white p-1 rounded-lg transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form Body -->
+            <form id="dealForm" onsubmit="saveDeal(event)" class="p-4 sm:p-6 space-y-4 overflow-y-auto flex-grow">
+                <input type="hidden" id="editingDealId" value="">
+
+                <!-- Date & Time Input -->
+                <div>
+                    <label class="block text-xs font-medium text-textMuted mb-1">Дата та час операції</label>
+                    <input type="datetime-local" id="dealTimestamp" required class="w-full bg-darkBg border border-borderBg rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition font-mono">
+                </div>
+
+                <!-- Type Selection -->
+                <div>
+                    <label class="block text-xs font-medium text-textMuted mb-1">Тип операції / Платформа</label>
+                    <select id="dealType" class="w-full bg-darkBg border border-borderBg rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                        <option value="З карткою -> USDT">💳 З карткою -> USDT</option>
+                        <option value="P2P Купівля">🛒 P2P Купівля</option>
+                        <option value="P2P Продаж">🏷️ P2P Продаж</option>
+                        <option value="Готівка -> Крипта">💵 Готівка -> Крипта</option>
+                        <option value="Міжбіржовий арбітраж">🔄 Міжбіржовий арбітраж</option>
+                        <option value="Інше">🌐 Інше</option>
+                    </select>
+                </div>
+
+                <!-- BUDGET FIELD WITH LIVE USD CONVERSION -->
+                <div class="bg-darkBg/70 border border-borderBg p-3.5 rounded-xl space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="block text-xs font-semibold text-gray-200">Бюджет (UAH, ₴)</label>
+                        <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">UAH ➔ USD</span>
+                    </div>
+                    
+                    <div class="relative">
+                        <input type="number" step="any" id="budgetUah" required placeholder="Наприклад: 50000" oninput="calculatePreview()" class="w-full bg-darkBg border border-borderBg rounded-xl p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition font-mono pr-8">
+                        <span class="absolute right-3 top-2.5 text-textMuted text-xs font-bold">₴</span>
+                    </div>
+
+                    <!-- DYNAMIC CONVERSION RESULT DISPLAY -->
+                    <div class="mt-2 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex justify-between items-center">
+                        <div class="flex items-center gap-1.5 text-xs text-emerald-300">
+                            <i class="fa-solid fa-calculator text-emerald-400"></i>
+                            <span class="font-medium">Эквівалент в $ (по курсу входу):</span>
+                        </div>
+                        <div id="usdConversionDisplay" class="text-sm font-bold font-mono text-emerald-400">
+                            $0.00
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rates Inputs (Вхід / Вихід) -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-textMuted mb-1">Курс входу (Вхід)</label>
+                        <input type="number" step="any" id="rateEntrance" required placeholder="41.20" oninput="calculatePreview()" class="w-full bg-darkBg border border-borderBg rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-textMuted mb-1">Курс виходу (Вихід)</label>
+                        <input type="number" step="any" id="rateExit" required placeholder="41.85" oninput="calculatePreview()" class="w-full bg-darkBg border border-borderBg rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition font-mono">
+                    </div>
+                </div>
+
+                <!-- Expenses optional -->
+                <div>
+                    <label class="block text-xs font-medium text-textMuted mb-1">Комісії / Витрати (₴)</label>
+                    <input type="number" step="any" id="expenses" placeholder="0" oninput="calculatePreview()" class="w-full bg-darkBg border border-borderBg rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition font-mono">
+                </div>
+
+                <!-- Live Preview Result Box -->
+                <div class="p-3 bg-borderBg/40 rounded-xl border border-borderBg/80 grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <span class="text-textMuted block text-[11px]">Чистий прибуток:</span>
+                        <span id="previewProfit" class="font-bold text-sm text-emerald-400 font-mono">+0.00 ₴</span>
+                    </div>
+                    <div>
+                        <span class="text-textMuted block text-[11px]">ROI %:</span>
+                        <span id="previewRoi" class="font-bold text-sm text-teal-300 font-mono">0.00%</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="pt-2 flex items-center justify-end gap-3">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-xl bg-borderBg hover:bg-borderBg/80 text-gray-300 text-xs font-medium transition">Скасувати</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium transition shadow-lg shadow-emerald-900/40">Зберегти угоду</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- INITIAL DEPOSIT MODAL -->
+    <div id="depositModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-cardBg border border-borderBg rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl animate-pop">
+            <h3 class="font-bold text-base text-white flex items-center gap-2">
+                <i class="fa-solid fa-piggy-bank text-emerald-400"></i> Початковий депозит
+            </h3>
+            <p class="text-xs text-textMuted">Вкажіть стартову суму робочого капіталу для точного розрахунку поточного балансу.</p>
+            <div>
+                <label class="block text-xs font-medium text-textMuted mb-1">Депозит (₴)</label>
+                <input type="number" step="any" id="initialDepositInput" placeholder="100000" class="w-full bg-darkBg border border-borderBg rounded-xl p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono">
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeInitialDepositModal()" class="px-4 py-2 rounded-xl bg-borderBg text-xs text-gray-300">Скасувати</button>
+                <button onclick="saveInitialDeposit()" class="px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-medium">Зберегти</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data State Store
+        let deals = JSON.parse(localStorage.getItem('p2p_deals_data')) || [];
+        let initialDeposit = parseFloat(localStorage.getItem('p2p_initial_deposit')) || 0;
+        let activeFilter = 'today';
+        let profitChartInstance = null;
+        let turnoverChartInstance = null;
+
+        // On Application Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderDashboard();
+            initCharts();
+            registerServiceWorker();
+        });
+
+        // Open/Close Modal
+        function openModal(editId = null) {
+            const form = document.getElementById('dealForm');
+            form.reset();
+
+            if (editId) {
+                const deal = deals.find(d => d.id === editId);
+                if (deal) {
+                    document.getElementById('modalTitle').innerText = 'Редагувати угоду';
+                    document.getElementById('editingDealId').value = deal.id;
+                    document.getElementById('dealTimestamp').value = deal.timestamp.slice(0, 16);
+                    document.getElementById('dealType').value = deal.type;
+                    document.getElementById('budgetUah').value = deal.budgetUah;
+                    document.getElementById('rateEntrance').value = deal.rateEntrance;
+                    document.getElementById('rateExit').value = deal.rateExit;
+                    document.getElementById('expenses').value = deal.expenses || 0;
+                }
+            } else {
+                document.getElementById('modalTitle').innerText = 'Додати нову угоду';
+                document.getElementById('editingDealId').value = '';
+                
+                // Set default timestamp to now (local timezone)
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                document.getElementById('dealTimestamp').value = now.toISOString().slice(0, 16);
+            }
+
+            calculatePreview();
+            document.getElementById('dealModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('dealModal').classList.add('hidden');
+        }
+
+        function openInitialDepositModal() {
+            document.getElementById('initialDepositInput').value = initialDeposit || '';
+            document.getElementById('depositModal').classList.remove('hidden');
+        }
+
+        function closeInitialDepositModal() {
+            document.getElementById('depositModal').classList.add('hidden');
+        }
+
+        function saveInitialDeposit() {
+            const val = parseFloat(document.getElementById('initialDepositInput').value) || 0;
+            initialDeposit = val;
+            localStorage.setItem('p2p_initial_deposit', val);
+            closeInitialDepositModal();
+            renderDashboard();
+        }
+
+        // Live calculation preview (Includes USD Dynamic Conversion)
+        function calculatePreview() {
+            const budget = parseFloat(document.getElementById('budgetUah').value) || 0;
+            const entrance = parseFloat(document.getElementById('rateEntrance').value) || 0;
+            const exit = parseFloat(document.getElementById('rateExit').value) || 0;
+            const exp = parseFloat(document.getElementById('expenses').value) || 0;
+
+            // Conversion USD
+            let usdEquiv = 0;
+            if (budget > 0 && entrance > 0) {
+                usdEquiv = budget / entrance;
+            }
+            document.getElementById('usdConversionDisplay').innerText = `$${usdEquiv.toFixed(2)}`;
+
+            // Profit & ROI
+            let netProfit = 0;
+            let roi = 0;
+
+            if (budget > 0 && entrance > 0 && exit > 0) {
+                const cryptoAmount = budget / entrance;
+                const grossReturn = cryptoAmount * exit;
+                netProfit = grossReturn - budget - exp;
+                roi = (netProfit / budget) * 100;
+            }
+
+            const profitElem = document.getElementById('previewProfit');
+            profitElem.innerText = `${netProfit >= 0 ? '+' : ''}${netProfit.toFixed(2)} ₴`;
+            profitElem.className = `font-bold text-sm font-mono ${netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            document.getElementById('previewRoi').innerText = `${roi.toFixed(2)}%`;
+        }
+
+        // Save Deal
+        function saveDeal(e) {
+            e.preventDefault();
+
+            const editId = document.getElementById('editingDealId').value;
+            const timestamp = document.getElementById('dealTimestamp').value;
+            const budget = parseFloat(document.getElementById('budgetUah').value) || 0;
+            const entrance = parseFloat(document.getElementById('rateEntrance').value) || 0;
+            const exit = parseFloat(document.getElementById('rateExit').value) || 0;
+            const exp = parseFloat(document.getElementById('expenses').value) || 0;
+            const type = document.getElementById('dealType').value;
+
+            if (entrance <= 0 || exit <= 0) {
+                alert('Будь ласка, вкажіть коректні курси входу та виходу!');
+                return;
+            }
+
+            const usdEquiv = budget / entrance;
+            const cryptoQty = budget / entrance;
+            const grossReturn = cryptoQty * exit;
+            const netProfit = grossReturn - budget - exp;
+            const roi = (netProfit / budget) * 100;
+
+            const dealObj = {
+                id: editId ? parseInt(editId) : Date.now(),
+                timestamp: new Date(timestamp).toISOString(),
+                type: type,
+                budgetUah: budget,
+                usdEquiv: usdEquiv,
+                rateEntrance: entrance,
+                rateExit: exit,
+                expenses: exp,
+                netProfit: netProfit,
+                roi: roi
+            };
+
+            if (editId) {
+                const index = deals.findIndex(d => d.id === parseInt(editId));
+                if (index !== -1) deals[index] = dealObj;
+            } else {
+                deals.unshift(dealObj);
+            }
+
+            saveToStorage();
+            closeModal();
+            renderDashboard();
+        }
+
+        // Delete Deal
+        function deleteDeal(id) {
+            if (confirm('Видалити цю угоду з історії?')) {
+                deals = deals.filter(d => d.id !== id);
+                saveToStorage();
+                renderDashboard();
+            }
+        }
+
+        // Save to LocalStorage
+        function saveToStorage() {
+            localStorage.setItem('p2p_deals_data', JSON.stringify(deals));
+        }
+
+        // Clear All
+        function clearAllData() {
+            if (confirm('Ви дійсно бажаєте повністю очистити всі записи?')) {
+                deals = [];
+                initialDeposit = 0;
+                localStorage.removeItem('p2p_deals_data');
+                localStorage.removeItem('p2p_initial_deposit');
+                renderDashboard();
+            }
+        }
+
+        // Filter Logic
+        function setFilter(filterType) {
+            activeFilter = filterType;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === filterType) {
+                    btn.className = 'filter-btn px-3 py-1.5 rounded-xl text-xs font-medium transition whitespace-nowrap bg-emerald-500 text-white';
+                } else {
+                    btn.className = 'filter-btn px-3 py-1.5 rounded-xl text-xs font-medium transition whitespace-nowrap text-textMuted hover:bg-borderBg';
+                }
+            });
+
+            const labels = {
+                'today': 'Сьогодні',
+                'yesterday': 'Вчора',
+                '7days': '7 днів',
+                '30days': '30 днів',
+                'month': 'Цей місяць',
+                'last_month': 'Минулий місяць',
+                'all': 'Весь період'
+            };
+            document.getElementById('active-filter-label').innerText = `Фільтр: ${labels[filterType]}`;
+
+            renderDashboard();
+        }
+
+        // Filtered Deals Getter
+        function getFilteredDeals() {
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            return deals.filter(deal => {
+                const dealDate = new Date(deal.timestamp);
+                
+                if (activeFilter === 'today') {
+                    return dealDate >= startOfToday;
+                } else if (activeFilter === 'yesterday') {
+                    const startOfYesterday = new Date(startOfToday);
+                    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+                    return dealDate >= startOfYesterday && dealDate < startOfToday;
+                } else if (activeFilter === '7days') {
+                    const sevenDaysAgo = new Date(startOfToday);
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+                    return dealDate >= sevenDaysAgo;
+                } else if (activeFilter === '30days') {
+                    const thirtyDaysAgo = new Date(startOfToday);
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+                    return dealDate >= thirtyDaysAgo;
+                } else if (activeFilter === 'month') {
+                    return dealDate.getMonth() === now.getMonth() && dealDate.getFullYear() === now.getFullYear();
+                } else if (activeFilter === 'last_month') {
+                    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    const endLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+                    return dealDate >= lastMonth && dealDate <= endLastMonth;
+                }
+                return true; // 'all'
+            });
+        }
+
+        function renderDashboard() {
+            const filtered = getFilteredDeals();
+
+            // Stats Calculations
+            const totalTurnover = filtered.reduce((acc, d) => acc + d.budgetUah, 0);
+            const totalProfit = filtered.reduce((acc, d) => acc + d.netProfit, 0);
+            const totalUsdTurnover = filtered.reduce((acc, d) => acc + d.usdEquiv, 0);
+            const avgRoi = filtered.length > 0 ? (filtered.reduce((acc, d) => acc + d.roi, 0) / filtered.length) : 0;
+            
+            const currentBudget = initialDeposit + totalProfit;
+
+            const avgEntranceRate = filtered.length > 0 ? (filtered.reduce((acc, d) => acc + d.rateEntrance, 0) / filtered.length) : 41.5;
+            const totalProfitUsd = totalProfit / avgEntranceRate;
+
+            // DOM Updates
+            document.getElementById('stat-current-budget').innerText = `${currentBudget.toLocaleString('uk-UA', {maximumFractionDigits: 2})} ₴`;
+            document.getElementById('stat-initial-budget').innerText = `Початковий: ${initialDeposit.toLocaleString('uk-UA')} ₴`;
+
+            document.getElementById('stat-turnover').innerText = `${totalTurnover.toLocaleString('uk-UA', {maximumFractionDigits: 2})} ₴`;
+            document.getElementById('stat-turnover-usd').innerText = `≈ $${totalUsdTurnover.toLocaleString('en-US', {maximumFractionDigits: 2})}`;
+
+            document.getElementById('stat-profit').innerText = `${totalProfit >= 0 ? '+' : ''}${totalProfit.toLocaleString('uk-UA', {maximumFractionDigits: 2})} ₴`;
+            document.getElementById('stat-profit-usd').innerText = `≈ $${totalProfitUsd.toFixed(2)}`;
+
+            document.getElementById('stat-roi').innerText = `${avgRoi.toFixed(2)}%`;
+            document.getElementById('stat-deals-count').innerText = `Всього угод: ${filtered.length}`;
+
+            renderTableAndCards(filtered);
+            updateCharts(filtered);
+        }
+
+        function renderTableAndCards(data) {
+            const searchTerm = (document.getElementById('tableSearch')?.value || '').toLowerCase();
+            const filtered = data.filter(d => d.type.toLowerCase().includes(searchTerm) || d.budgetUah.toString().includes(searchTerm));
+
+            const tbody = document.getElementById('dealsTableBody');
+            const mobileList = document.getElementById('dealsMobileList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                mobileList.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            // Render Desktop Table
+            tbody.innerHTML = filtered.map(deal => {
+                const dateObj = new Date(deal.timestamp);
+                const formattedDate = dateObj.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' }) + ' ' + dateObj.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+
+                return `
+                    <tr class="hover:bg-borderBg/30 transition border-b border-borderBg/50">
+                        <td class="p-3.5 text-textMuted font-mono text-[11px]">${formattedDate}</td>
+                        <td class="p-3.5 font-medium text-white">${deal.type}</td>
+                        <td class="p-3.5 font-mono">
+                            <div class="text-white font-semibold">${deal.budgetUah.toLocaleString('uk-UA')} ₴</div>
+                            <div class="text-[11px] text-emerald-400 font-medium">$${deal.usdEquiv.toFixed(2)}</div>
+                        </td>
+                        <td class="p-3.5 font-mono text-xs">
+                            <span class="text-textMuted">${deal.rateEntrance.toFixed(2)}</span>
+                            <i class="fa-solid fa-arrow-right text-[10px] mx-1.5 text-emerald-500"></i>
+                            <span class="text-white font-semibold">${deal.rateExit.toFixed(2)}</span>
+                        </td>
+                        <td class="p-3.5 font-mono font-bold ${deal.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                            ${deal.netProfit >= 0 ? '+' : ''}${deal.netProfit.toFixed(2)} ₴
+                        </td>
+                        <td class="p-3.5 font-mono font-medium ${deal.roi >= 0 ? 'text-teal-300' : 'text-rose-400'}">
+                            ${deal.roi.toFixed(2)}%
+                        </td>
+                        <td class="p-3.5 text-right space-x-1">
+                            <button onclick="openModal(${deal.id})" title="Редагувати" class="text-textMuted hover:text-emerald-400 p-1.5 transition">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteDeal(${deal.id})" title="Видалити" class="text-textMuted hover:text-rose-400 p-1.5 transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Render Mobile List
+            mobileList.innerHTML = filtered.map(deal => {
+                const dateObj = new Date(deal.timestamp);
+                const formattedDate = dateObj.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' }) + ' ' + dateObj.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+
+                return `
+                    <div class="p-4 space-y-2 hover:bg-borderBg/20 transition">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-semibold text-white bg-borderBg/60 px-2.5 py-0.5 rounded-lg border border-white/5">${deal.type}</span>
+                            <span class="text-textMuted font-mono text-[10px]">${formattedDate}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                            <div>
+                                <span class="text-textMuted text-[10px] block">Бюджет</span>
+                                <span class="font-mono font-bold text-white">${deal.budgetUah.toLocaleString('uk-UA')} ₴</span>
+                                <span class="text-[10px] text-emerald-400 block font-mono">$${deal.usdEquiv.toFixed(2)}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-textMuted text-[10px] block">Прибуток / ROI</span>
+                                <span class="font-mono font-bold ${deal.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+                                    ${deal.netProfit >= 0 ? '+' : ''}${deal.netProfit.toFixed(2)} ₴
+                                </span>
+                                <span class="text-[10px] text-teal-300 block font-mono">${deal.roi.toFixed(2)}%</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px] pt-1 border-t border-borderBg/40">
+                            <div class="font-mono text-textMuted">
+                                Курс: <span class="text-gray-300">${deal.rateEntrance.toFixed(2)}</span> ➔ <span class="text-emerald-400 font-semibold">${deal.rateExit.toFixed(2)}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="openModal(${deal.id})" class="text-textMuted hover:text-emerald-400 p-1">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="deleteDeal(${deal.id})" class="text-textMuted hover:text-rose-400 p-1">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function initCharts() {
+            const ctx1 = document.getElementById('profitChart').getContext('2d');
+            profitChartInstance = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Прибуток (₴)',
+                        data: [],
+                        borderColor: '#00ff88',
+                        backgroundColor: 'rgba(0, 255, 136, 0.08)',
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#00ff88'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af', font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af', font: { size: 10 } } }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('turnoverChart').getContext('2d');
+            turnoverChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Оборот (₴)',
+                        data: [],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af', font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(data) {
+            if (!profitChartInstance || !turnoverChartInstance) return;
+
+            const sorted = [...data].reverse();
+            const labels = sorted.map(d => new Date(d.timestamp).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }));
+            const profits = sorted.map(d => d.netProfit);
+            const turnovers = sorted.map(d => d.budgetUah);
+
+            profitChartInstance.data.labels = labels;
+            profitChartInstance.data.datasets[0].data = profits;
+            profitChartInstance.update();
+
+            turnoverChartInstance.data.labels = labels;
+            turnoverChartInstance.data.datasets[0].data = turnovers;
+            turnoverChartInstance.update();
+        }
+
+        // Export Data JSON
+        function exportData() {
+            const backup = {
+                initialDeposit: initialDeposit,
+                deals: deals
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `p2p_journal_backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // Import Data JSON
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.deals && Array.isArray(parsed.deals)) {
+                        deals = parsed.deals;
+                        initialDeposit = parsed.initialDeposit || 0;
+                        saveToStorage();
+                        localStorage.setItem('p2p_initial_deposit', initialDeposit);
+                        renderDashboard();
+                        alert('Дані успішно імпортовано!');
+                    } else {
+                        alert('Некоректний формат файлу!');
+                    }
+                } catch (err) {
+                    alert('Помилка при зчитуванні файлу JSON!');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Register Inline Service Worker for PWA Offline Functionality
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    self.addEventListener('install', e => self.skipWaiting());
+                    self.addEventListener('activate', e => self.clients.claim());
+                    self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => new Response('Offline'))));
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+            }
+        }
+    </script>
+</body>
+</html>
+```
+
+### Как выложить на GitHub и установить на iPhone:
+1. Создайте репозиторий на GitHub (например, `p2p-journal`).
+2. Загрузите этот файл `index.html` в корень репозитория.
+3. В настройках репозитория откройте **Settings ➔ Pages** и выберите ветку `main` для деплоя.
+4. Откройте полученную ссылку веб-сайта в браужере **Safari на iPhone**.
+5. Нажмите кнопку **«Поделиться» (Share)** внизу экрана Safari и выберите **«На экран "Домой"» (Add to Home Screen)**.
+6. На рабочем столе появится иконка PWA-приложения, которая запускается без рамок браузера и сохраняет данные локально в память вашего iPhone.
