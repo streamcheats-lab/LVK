@@ -11,14 +11,14 @@
  $('lvkOpenAbout').addEventListener('click',()=>navigate('aboutPage'));
  $('lvkProfileLogout').addEventListener('click',()=>{$('signOut').click();navigate('settings')});
  // Existing navigation attaches click handlers only at initialization; this menu item is added afterward.
- document.querySelector('.lvk-more-menu [data-page="contactsPage"]').addEventListener('click',()=>navigate('contactsPage'));
+ document.querySelector('.lvk-more-menu [data-page="contactsPage"]')?.addEventListener('click',()=>navigate('contactsPage'));
  const tabs=[...document.querySelectorAll('[data-contact-tab]')];
  function selectTab(tab){tabs.forEach(b=>{const active=b.dataset.contactTab===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))});$('lvkSavedContacts').hidden=tab!=='saved';$('lvkBlockedContacts').hidden=tab!=='blocked';}
  tabs.forEach(b=>b.addEventListener('click',()=>selectTab(b.dataset.contactTab)));
  const contactsNav=document.querySelector('.nav [data-page="contactsPage"]');
  contactsNav.addEventListener('click',()=>{loadShadowContacts().catch(console.error);loadBlockedUsers().catch(console.error);selectTab('saved')});
  const menuContacts=document.querySelector('.lvk-more-menu [data-page="contactsPage"]');
- menuContacts.addEventListener('click',()=>{loadShadowContacts().catch(console.error);loadBlockedUsers().catch(console.error);selectTab('saved')});
+ menuContacts?.addEventListener('click',()=>{loadShadowContacts().catch(console.error);loadBlockedUsers().catch(console.error);selectTab('saved')});
  // Live status reflects the actual Supabase subscription check, not a static PRO label.
  const proStatus=$('proStatus');
  function sync(){

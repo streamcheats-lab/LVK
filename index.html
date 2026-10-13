@@ -129,7 +129,8 @@ async function loadDirectChats(){
  if(!visible.length)box.textContent='Личных чатов пока нет';
 }
 async function openDirectWith(u){
- if(!proActive)throw Error('Нужен PRO');
+ if(!currentUser)throw Error('Войди в аккаунт, чтобы написать пользователю');
+ if(!proActive)throw Error('Личные чаты сейчас доступны только с активной LVK PRO');
  const {data,error}=await sb.rpc('shadow_dm_open',{p_user:u.user_id});if(error)throw error;
  await openDirectChat(data,'@'+u.nickname,u.user_id);await loadDirectChats();
 }
@@ -392,19 +393,23 @@ async function loadShadowContacts(){
  const {data:profiles,error:pe}=ids.length?await sb.from('shadow_profiles').select('user_id,nickname').in('user_id',ids):{data:[],error:null};
  if(pe){info.textContent='Ошибка никнеймов: '+pe.message;return}
  const names=Object.fromEntries((profiles||[]).map(p=>[p.user_id,p.nickname]));
+ const {data:blockedRows,error:blocksError}=await sb.from('shadow_user_blocks').select('blocked_id').eq('blocker_id',currentUser.id);
+ if(blocksError){info.textContent='Ошибка проверки блокировок: '+blocksError.message;return}
+ const blockedIds=new Set((blockedRows||[]).map(b=>b.blocked_id));
  shadowContacts=(data||[]).map(c=>({...c,nickname:names[c.contact_id]||'пользователь'}));
  for(const c of shadowContacts){
   const row=document.createElement('div');row.className='contacts-row';
   const label=document.createElement('span');label.textContent=c.display_name+' (@'+c.nickname+')';
   const actions=document.createElement('div');actions.className='contact-actions';
-  const write=document.createElement('button');write.type='button';write.className='primary';write.textContent='Написать';
+  const isBlocked=blockedIds.has(c.contact_id);
+  const write=document.createElement('button');write.type='button';write.className='primary';write.textContent=isBlocked?'Заблокирован':'Написать';write.disabled=isBlocked;
   write.onclick=async()=>{write.disabled=true;try{switchShadowChatTab('groups');navigate('chatPage');await initShadowChat();await openDirectWith({user_id:c.contact_id,nickname:c.nickname});$('chatMessages').scrollIntoView({block:'nearest',behavior:'smooth'});}catch(e){info.textContent='Не удалось открыть чат: '+e.message;chatInfo('Ошибка: '+e.message)}finally{write.disabled=false}};
   const rename=document.createElement('button');rename.type='button';rename.className='secondary';rename.textContent='Изменить имя';
   rename.onclick=async()=>{try{await saveShadowContact(c.contact_id,c.nickname);await loadShadowContacts()}catch(e){info.textContent=e.message}};
   const remove=document.createElement('button');remove.type='button';remove.className='secondary';remove.textContent='Удалить';
   remove.onclick=async()=>{if(!confirm('Удалить контакт '+c.display_name+'?'))return;const {error}=await sb.from('shadow_contacts').delete().eq('owner_id',currentUser.id).eq('contact_id',c.contact_id);if(error)info.textContent=error.message;else await loadShadowContacts()};
-  const block=document.createElement('button');block.type='button';block.className='danger';block.textContent='Заблокировать';
-  block.onclick=async()=>{if(!confirm('Заблокировать @'+c.nickname+'?'))return;block.disabled=true;const {error}=await sb.rpc('shadow_dm_block',{p_user:c.contact_id,p_block:true});if(error){info.textContent='Ошибка блокировки: '+error.message;block.disabled=false;return}await loadBlockedUsers();await loadShadowContacts();info.textContent='Пользователь заблокирован. Открой вкладку «Заблокированные», чтобы разблокировать.'};
+  const block=document.createElement('button');block.type='button';block.className=isBlocked?'secondary':'danger';block.textContent=isBlocked?'Разблокировать':'Заблокировать';
+  block.onclick=async()=>{const nextBlock=!isBlocked;if(!confirm((nextBlock?'Заблокировать ':'Разблокировать ')+'@'+c.nickname+'?'))return;block.disabled=true;const {error}=await sb.rpc('shadow_dm_block',{p_user:c.contact_id,p_block:nextBlock});if(error){info.textContent='Ошибка блокировки: '+error.message;block.disabled=false;return}await Promise.all([loadBlockedUsers(),loadShadowContacts()]);info.textContent=nextBlock?'Пользователь заблокирован.':'Пользователь разблокирован.'};
   actions.append(write,rename,block,remove);row.append(lvkAvatar(c.display_name,c.contact_id),label,actions);box.append(row);
  }
  if(!shadowContacts.length)box.textContent='Контактов пока нет. Найди пользователя в поиске и нажми «＋ Контакт».';
