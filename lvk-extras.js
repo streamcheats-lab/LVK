@@ -18,7 +18,8 @@
  supportHeader.innerHTML='<span class="lvk-more-icon">☏</span><span><strong>Поддержка LVK</strong><small>Написать администрации · Бесплатно</small></span><span class="lvk-more-chevron">⌄</span>';
  const supportContent=document.createElement('div');supportContent.className='lvk-more-support-content';supportContent.hidden=true;
  support.style.display='block';supportContent.appendChild(support);
- supportHeader.addEventListener('click',()=>{supportContent.hidden=!supportContent.hidden;supportHeader.classList.toggle('expanded',!supportContent.hidden);if(!supportContent.hidden){loadSupportMessages().catch(e=>{$('supportInfo').textContent=e.message});}});
+ supportHeader.setAttribute('aria-expanded','false');supportHeader.setAttribute('aria-controls','lvkMoreSupportContent');supportContent.id='lvkMoreSupportContent';
+ supportHeader.addEventListener('click',()=>{const opening=supportContent.hidden;supportContent.hidden=!opening;supportHeader.classList.toggle('expanded',opening);supportHeader.setAttribute('aria-expanded',String(opening));if(opening){support.style.display='block';loadSupportMessages().catch(e=>{$('supportInfo').textContent=e.message});}});
  supportCard.append(supportHeader,supportContent);moreTitle.after(supportCard);
  $('chatTabSupport').style.display='none';$('chatTabGroups').textContent='Чаты и группы';
  $('chatPage').classList.add('lvk-premium-chat');

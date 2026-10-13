@@ -1,0 +1,32 @@
+/* LVK v8: support visibility and compact navigation pages */
+/* Earlier avatar styles added 150–190px to both page and shell, leaving a large blank area. */
+#settings,#contactsPage,#profilePage,#aboutPage{padding-top:0!important;padding-bottom:12px!important;margin-top:0!important;scroll-margin-bottom:0!important}
+#settings .lvk-more-hero{padding:12px 14px!important;margin-bottom:8px!important;gap:10px!important}
+#settings .lvk-more-avatar{height:44px!important;flex-basis:44px!important;font-size:21px!important}
+#settings .lvk-more-support{margin-bottom:8px!important}
+#settings .lvk-more-link{padding:10px 12px!important;min-height:52px!important;gap:10px!important}
+#settings .lvk-more-icon{width:34px!important;height:34px!important;font-size:18px!important;flex-shrink:0}
+#settings .lvk-more-link small{margin-top:2px!important}
+#settings>.card{margin:8px 0!important;padding:14px!important}
+#settings>.card h3{margin:0 0 8px!important}
+#settings .lvk-more-menu{margin:0 0 8px!important;gap:6px!important}
+#settings .lvk-more-support-content{padding:0 10px 10px!important}
+#settings .lvk-more-support-content:not([hidden]) #chatSupportSection{display:block!important}
+#settings #supportPanel{padding:13px!important}
+#settings #supportPanel .chat-messages{min-height:120px!important;height:auto!important;max-height:260px!important}
+#contactsPage{max-width:920px!important;padding:0 0 10px!important}
+#contactsPage .title{margin:0 0 5px!important}
+#contactsPage>.muted{margin:0 0 7px!important}
+#contactsPage .lvk-subtabs{margin:6px 0 8px!important}
+#contactsPage .card{padding:12px!important;margin:0 0 7px!important}
+#contactsPage .card h3{margin:0 0 5px!important}
+#contactsPage .card>.muted{margin:0 0 6px!important}
+#contactsPage .contacts-row{margin:3px 0!important;padding:8px 10px!important;min-height:42px!important}
+/* One safe bottom inset for fixed navigation instead of stacked empty padding. */
+.shell{padding-bottom:calc(98px + env(safe-area-inset-bottom,0px))!important}
+@media(max-width:600px){
+ #settings,#contactsPage,#profilePage,#aboutPage{padding-bottom:10px!important}
+ .shell{padding-bottom:calc(94px + env(safe-area-inset-bottom,0px))!important}
+ #settings .lvk-more-hero{padding:10px 12px!important}
+ #contactsPage .card{padding:11px!important}
+}
