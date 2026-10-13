@@ -45,7 +45,7 @@ body.lvk-free .conversion{display:none}
 #lvkToast{position:fixed;top:16px;right:16px;max-width:min(360px,90vw);z-index:3000;background:#244c3c;border:1px solid #45dd90;color:#fff;border-radius:12px;padding:13px;box-shadow:0 8px 28px #0008;display:none}
 #lvkNoticeCount{background:#41df90;color:#082014;border-radius:12px;padding:1px 6px;font-weight:800}
 @media(max-width:750px){.chat-layout{grid-template-columns:1fr}.chat-section-tabs{position:sticky;top:0}.chat-list{max-height:230px;overflow:auto}.chat-head button{font-size:12px}}
-</style><link href="./lvk-premium.css" rel="stylesheet"/><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link href="./lvk-account.css" rel="stylesheet"/><link rel="stylesheet" href="./lvk-v6-fixes.css"/><link rel="stylesheet" href="./lvk-v7-fixes.css"/><link rel="stylesheet" href="./lvk-v8-fixes.css"/></head><body><div aria-live="polite" id="lvkToast" role="status"></div><main class="shell"><div class="top">
+</style><link href="./lvk-premium.css" rel="stylesheet"/><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link href="./lvk-account.css" rel="stylesheet"/><link rel="stylesheet" href="./lvk-v6-fixes.css"/><link rel="stylesheet" href="./lvk-v7-fixes.css"/><link rel="stylesheet" href="./lvk-v8-fixes.css"/><link rel="stylesheet" href="./lvk-v9-fixes.css"/></head><body><div aria-live="polite" id="lvkToast" role="status"></div><main class="shell"><div class="top">
 <div class="logo">LVK</div><button class="secondary" id="lvkNoticeButton" title="Уведомления" type="button">🔔 <span id="lvkNoticeCount">0</span></button>
 <a class="pro-link" href="payment.html" data-lvk-buy="true" id="lvkBuyTop">✦ Купить PRO</a>
 </div><section class="page active" id="dashboard"><h1 class="title">Моя торговля</h1><div class="stats"><div class="card"><div class="statlabel">💰 Общий оборот</div><div class="value" id="turnover">0 ₴</div><div class="small">Сумма покупок USD</div><div class="usdline" id="turnoverUsd">≈ 0,00 USD</div></div><div class="card"><div class="statlabel">▣ Чистая прибыль</div><div class="value green" id="profit">+0 ₴</div><div class="small">С учётом комиссий</div><div class="usdline" id="profitUsd">≈ 0,00 USD</div></div><div class="card"><div class="statlabel">↗ ROI</div><div class="value green" id="roi">0,00%</div><div class="small">Доходность операций</div></div><div class="card"><div class="statlabel">▥ Количество сделок</div><div class="value" id="count">0</div><div class="small">Завершённые операции</div></div></div><div class="tabs" id="periods"><button data-period="today" type="button">Сегодня</button><button data-period="yesterday" type="button">Вчера</button><button class="active" data-period="7" type="button">7 дней</button><button data-period="30" type="button">30 дней</button><button data-period="all" type="button">Всё время</button></div><div class="layout"><div class="card"><h3 id="lvkProfitChartHeading">Прибыль по дням, ₴</h3><div class="chart" id="profitChart"></div><div class="chartlabels"><span id="fromDate">—</span><span id="toDate">—</span></div></div><div class="card"><h3>Оборот по дням, ₴</h3><div class="chart" id="volumeChart"></div><div class="chartlabels"><span id="fromDate2">—</span><span id="toDate2">—</span></div></div><div class="card wide"><h3>Прибыль по банкам и типам операций</h3><div class="progress"><div id="bankProgress"></div></div><div class="split"><span id="bankLabel">● Карта 0 ₴</span><span id="cashLabel">● Наличные 0 ₴</span></div></div><div class="card wide"><h3>Последние операции</h3><div class="history-wrap" id="recent"></div></div></div></section><section class="page" id="add"><h1 class="title">Новая P2P-сделка</h1><div class="card"><div class="formgrid"><div class="field"><label>Сумма покупки, ₴</label><input id="amount" min="0" step="0.01" type="number" value="10000"/></div><div class="field"><label>Курс покупки, ₴/USD</label><input id="buy" min="0" step="0.01" type="number" value="45.30"/></div><div class="field"><label>Курс продажи, ₴/USD</label><input id="sell" min="0" step="0.01" type="number" value="46.90"/></div><div class="field"><label>Комиссии, ₴</label><input id="fee" min="0" step="0.01" type="number" value="0"/></div><div class="field"><label>Банк / тип операции</label><select id="method"><option value="АТ «Райффайзен Банк»">АТ «Райффайзен Банк»</option><option value="АТ «ОТП БАНК»">АТ «ОТП БАНК»</option><option value="monobank (АТ «УНІВЕРСАЛ БАНК»)">monobank (АТ «УНІВЕРСАЛ БАНК»)</option><option value="АТ «ПУМБ» — Перший Український Міжнародний Банк">АТ «ПУМБ» — Перший Український Міжнародний Банк</option><option value="АТ КБ «ПриватБанк»">АТ КБ «ПриватБанк»</option><option value="АТ «А-БАНК»">АТ «А-БАНК»</option><option value="Власний рахунок (переказ між своїми рахунками)">Власний рахунок (переказ між своїми рахунками)</option><option value="TransferGo — міжнародні перекази">TransferGo — міжнародні перекази</option><option value="АТ «Ощадбанк»">АТ «Ощадбанк»</option></select></div><div class="field"><label>Дата</label><input id="date" type="date"/></div></div><div class="actions"><button class="primary" id="save" type="button">Сохранить сделку</button><span class="result" id="estimate">+0 ₴</span></div><div class="conversion"><div><span class="muted">Сумма покупки в USD</span><strong id="purchasePreviewUsd">0,00 USD</strong></div><div><span class="muted">Прибыль в USD</span><strong id="profitPreviewUsd">+0,00 USD</strong></div></div><div class="notice">Бесплатная версия: история и количество сделок доступны. Финансовые показатели и расширенная аналитика — в LVK PRO.</div><div class="notice">Расчёт: (сумма / курс покупки) × курс продажи − сумма − комиссии. Конвертация в USD производится по курсу покупки каждой сделки, без текущего рыночного курса.</div></div></section><section class="page" id="historyPage"><h1 class="title">История операций</h1><div class="card"><div class="history-wrap" id="allHistory"></div><div class="actions"><button class="secondary" id="export" type="button">Экспорт CSV</button><button class="secondary" id="clear" type="button">Очистить историю</button></div></div></section><section class="page" id="settings"><div class="lvk-more-menu">
@@ -110,7 +110,7 @@ async function blockCurrentDm(){
  const {error}=await sb.rpc('shadow_dm_block',{p_user:c.peer,p_block:true});if(error)return chatInfo('Ошибка блокировки: '+error.message);
  if(directRealtime){await sb.removeChannel(directRealtime);directRealtime=null}
  activeDirectChat=null;hideDmControls();$('chatTitle').textContent='Выбери чат';$('chatTitle').classList.remove('lvk-dm-title');$('chatMessages').textContent='Пользователь заблокирован';
- await loadDirectChats();await loadBlockedUsers();chatInfo('Пользователь заблокирован. Разблокировать можно в «Ещё».');
+ await loadDirectChats();await loadBlockedUsers();chatInfo('Пользователь заблокирован. Открой «Контакты → Заблокированные», чтобы разблокировать.');
 }
 $('dmDeleteButton').onclick=deleteCurrentDm;
 $('dmBlockButton').onclick=blockCurrentDm;
@@ -144,6 +144,7 @@ async function openDirectChat(id,label,peer){
  if(chatRealtime){await sb.removeChannel(chatRealtime);chatRealtime=null}
  if(directRealtime){await sb.removeChannel(directRealtime);directRealtime=null}
  await refreshDirectMessages();
+ lvkMarkDmRead(id);
  directRealtime=sb.channel('shadow-dm-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'shadow_direct_messages',filter:'chat_id=eq.'+id},()=>refreshDirectMessages()).subscribe();
  chatInfo('Личная переписка · LVK PRO');
 }
@@ -161,7 +162,7 @@ async function refreshDirectMessages(){
 async function sendDirectMessage(){
  const c=activeDirectChat;const input=$('chatMessageInput');const message=input.value.trim();if(!c||!message)return;
  $('sendChatButton').disabled=true;
- try{const {error}=await sb.rpc('shadow_dm_send',{p_chat:c.id,p_message:message});if(error)throw error;input.value='';await refreshDirectMessages()}catch(e){chatInfo('Ошибка: '+e.message)}finally{$('sendChatButton').disabled=false}
+ try{const {error}=await sb.rpc('shadow_dm_send',{p_chat:c.id,p_message:message});if(error)throw error;input.value='';await refreshDirectMessages();await loadDirectChats()}catch(e){chatInfo('Ошибка: '+e.message)}finally{$('sendChatButton').disabled=false}
 }
 function updateGroupAction(group){
  const b=$('groupLeaveDelete');b.style.display='none';if(!group||group.is_system)return;
@@ -334,7 +335,7 @@ async function openSupportThread(uid){supportAdminUser=uid;const {data,error}=aw
 $('supportRefresh').onclick=loadSupportInbox;
 $('supportReplySend').onclick=async()=>{if(!shadowAdmin||!supportAdminUser)return;const inp=$('supportReplyInput'),msg=inp.value.trim();if(!msg)return;const {error}=await sb.from('support_messages').insert({user_id:supportAdminUser,message:msg,is_admin:true,is_staff:true});if(error){$('supportAdminInfo').textContent='Ошибка: '+error.message;return}inp.value='';await openSupportThread(supportAdminUser)};
 const originalOpenAdmin=$('openAdmin').onclick;$('openAdmin').onclick=()=>{originalOpenAdmin();if(shadowAdmin)loadSupportInbox()};
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&$('chatPage').classList.contains('active')&&shadowChatTab==='support')loadSupportMessages()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&$('settings').classList.contains('active')&&!document.querySelector('.lvk-more-support-content')?.hidden)loadSupportMessages()});
 
 // Public nickname lookup (authenticated users only; no email disclosure)
 async function loadMyNickname(){
@@ -402,7 +403,9 @@ async function loadShadowContacts(){
   rename.onclick=async()=>{try{await saveShadowContact(c.contact_id,c.nickname);await loadShadowContacts()}catch(e){info.textContent=e.message}};
   const remove=document.createElement('button');remove.type='button';remove.className='secondary';remove.textContent='Удалить';
   remove.onclick=async()=>{if(!confirm('Удалить контакт '+c.display_name+'?'))return;const {error}=await sb.from('shadow_contacts').delete().eq('owner_id',currentUser.id).eq('contact_id',c.contact_id);if(error)info.textContent=error.message;else await loadShadowContacts()};
-  actions.append(write,rename,remove);row.append(lvkAvatar(c.display_name,c.contact_id),label,actions);box.append(row);
+  const block=document.createElement('button');block.type='button';block.className='danger';block.textContent='Заблокировать';
+  block.onclick=async()=>{if(!confirm('Заблокировать @'+c.nickname+'?'))return;block.disabled=true;const {error}=await sb.rpc('shadow_dm_block',{p_user:c.contact_id,p_block:true});if(error){info.textContent='Ошибка блокировки: '+error.message;block.disabled=false;return}await loadBlockedUsers();await loadShadowContacts();info.textContent='Пользователь заблокирован. Открой вкладку «Заблокированные», чтобы разблокировать.'};
+  actions.append(write,rename,block,remove);row.append(lvkAvatar(c.display_name,c.contact_id),label,actions);box.append(row);
  }
  if(!shadowContacts.length)box.textContent='Контактов пока нет. Найди пользователя в поиске и нажми «＋ Контакт».';
  refreshGroupContactOptions();
@@ -446,7 +449,7 @@ function switchShadowChatTab(tab){
   $('chatTabGroups').classList.toggle('active',!support);
   $('chatTabSupport').setAttribute('aria-selected',String(support));
   $('chatTabGroups').setAttribute('aria-selected',String(!support));
-  if(support){loadSupportMessages().catch(e=>{$('supportInfo').textContent='Ошибка: '+e.message});}
+  if(support){lvkMarkSupportRead();loadSupportMessages().catch(e=>{$('supportInfo').textContent='Ошибка: '+e.message});}
   else if(supportChannel&&sb){sb.removeChannel(supportChannel);supportChannel=null;}
 }
 $('chatTabGroups').onclick=()=>switchShadowChatTab('groups');
@@ -457,11 +460,43 @@ switchShadowChatTab('groups');
 const lvkNoticeKey=()=> 'lvk_notices_'+(currentUser?.id||'guest');
 let lvkNotices=[];let lvkSeen={};
 function lvkToast(message){const el=$('lvkToast');el.textContent=message;el.style.display='block';clearTimeout(window.lvkToastTimer);window.lvkToastTimer=setTimeout(()=>el.style.display='none',5000)}
+function lvkSaveNotices(){localStorage.setItem(lvkNoticeKey(),JSON.stringify(lvkNotices));lvkRenderNotices()}
 function lvkLoadNotices(){try{lvkNotices=JSON.parse(localStorage.getItem(lvkNoticeKey()))||[]}catch{lvkNotices=[]}lvkRenderNotices()}
-function lvkRenderNotices(){const count=$('lvkNoticeCount'),box=$('lvkNotificationsList');count.textContent=String(lvkNotices.length);box.replaceChildren();if(!lvkNotices.length)box.textContent='Нет уведомлений';lvkNotices.forEach(n=>{const div=document.createElement('div');div.className='nickname-result';div.textContent=n.text+' · '+new Date(n.time).toLocaleString('ru-RU');box.append(div)})}
-function lvkNotify(text){lvkNotices.unshift({text,time:Date.now()});lvkNotices=lvkNotices.slice(0,50);localStorage.setItem(lvkNoticeKey(),JSON.stringify(lvkNotices));lvkRenderNotices();lvkToast(text)}
+function lvkMarkDmRead(chatId){if(!chatId)return;lvkNotices=lvkNotices.filter(n=>!(n.kind==='dm'&&n.chatId===chatId));lvkSaveNotices()}
+function lvkMarkSupportRead(){lvkNotices=lvkNotices.filter(n=>n.kind!=='support');lvkSaveNotices()}
+async function lvkOpenNotice(n){
+ try{
+  if(n.kind==='dm'&&n.chatId){
+   switchShadowChatTab('groups');navigate('chatPage');await initShadowChat();
+   await openDirectChat(n.chatId,n.label||'Личный чат',n.peer);
+   lvkMarkDmRead(n.chatId);
+  }else if(n.kind==='support'){
+   navigate('settings');const h=document.querySelector('.lvk-more-support > .lvk-more-link');if(h&&document.querySelector('.lvk-more-support-content')?.hidden)h.click();
+   await loadSupportMessages();lvkMarkSupportRead();
+  }else{lvkNotices=lvkNotices.filter(x=>x.id!==n.id);lvkSaveNotices();navigate('chatPage')}
+ }catch(e){lvkToast('Не удалось открыть сообщение: '+e.message)}
+}
+function lvkRenderNotices(){
+ const count=$('lvkNoticeCount'),box=$('lvkNotificationsList');count.textContent=String(lvkNotices.length);box.replaceChildren();
+ if(!lvkNotices.length){box.textContent='Непрочитанных уведомлений нет';return}
+ lvkNotices.forEach(n=>{
+  const b=document.createElement('button');b.type='button';b.className='lvk-notice-row';
+  const avatar=lvkAvatar(n.label||'LVK',n.peer||null);
+  const content=document.createElement('span');content.className='lvk-notice-content';
+  const title=document.createElement('strong');title.textContent=n.label||'LVK';
+  const preview=document.createElement('span');preview.textContent=n.text||'Новое сообщение';
+  const time=document.createElement('small');time.textContent=new Date(n.time).toLocaleString('ru-RU');
+  content.append(title,preview,time);b.append(avatar,content);b.onclick=()=>lvkOpenNotice(n);box.append(b)
+ })
+}
+function lvkNotify(text,extra={}){
+ const notice={id:crypto.randomUUID(),text,time:Date.now(),...extra};
+ if(notice.kind==='dm'&&notice.chatId&&activeDirectChat?.id===notice.chatId&&$('chatPage').classList.contains('active'))return;
+ if(notice.messageId&&lvkNotices.some(n=>n.messageId===notice.messageId))return;
+ lvkNotices.unshift(notice);lvkNotices=lvkNotices.slice(0,50);lvkSaveNotices();lvkToast(text)
+}
 $('lvkNoticeButton').onclick=()=>{navigate('settings');$('lvkNotificationsCard').style.display='block';lvkRenderNotices()};
-$('lvkClearNotices').onclick=()=>{lvkNotices=[];localStorage.setItem(lvkNoticeKey(),'[]');lvkRenderNotices()};
+$('lvkClearNotices').onclick=()=>{lvkNotices=[];lvkSaveNotices()};
 function lvkUpdateBuy(){const top=$('lvkBuyTop');if(top)top.style.display=proActive?'none':'inline-flex'}
 setInterval(lvkUpdateBuy,1500);lvkUpdateBuy();
 function lvkAvatar(name,userId){const a=document.createElement('span');a.className='avatar';a.textContent=String(name||'?').replace(/^@/,'').slice(0,2).toUpperCase();if(userId&&window.lvkAttachAvatar)window.lvkAttachAvatar(a,userId);return a}
@@ -481,15 +516,23 @@ const lvkOldOpenThread=openSupportThread;openSupportThread=async function(uid){a
 let lvkPollBusy=false;
 async function lvkPoll(){if(lvkPollBusy||!currentUser||!sb)return;lvkPollBusy=true;try{
  const uid=currentUser.id;
- const queries=[sb.from('support_messages').select('id,created_at').eq('user_id',uid).eq('is_staff',true).order('created_at',{ascending:false}).limit(1)];
+ const queries=[sb.from('support_messages').select('id,message,created_at').eq('user_id',uid).eq('is_staff',true).order('created_at',{ascending:false}).limit(1)];
  if(proActive){queries.push(sb.from('shadow_direct_chats').select('id,user_a,user_b').or('user_a.eq.'+uid+',user_b.eq.'+uid).limit(100));queries.push(sb.from('chat_members').select('group_id').eq('user_id',uid).limit(100))}
  const results=await Promise.all(queries);
- const support=results[0].data?.[0];if(support){const key='support:'+support.id;if(lvkSeen.supportReady&&lvkSeen.support!==key){lvkNotify('Новое сообщение от поддержки');if($('chatPage').classList.contains('active')&&shadowChatTab==='support')loadSupportMessages()}lvkSeen.support=key;lvkSeen.supportReady=true}
+ const support=results[0].data?.[0];if(support){const key='support:'+support.id;if(lvkSeen.supportReady&&lvkSeen.support!==key){lvkNotify(support.message||'Новое сообщение от поддержки',{kind:'support',label:'Поддержка LVK',messageId:support.id});if($('settings').classList.contains('active')&&!document.querySelector('.lvk-more-support-content')?.hidden)loadSupportMessages()}lvkSeen.support=key;lvkSeen.supportReady=true}
  if(proActive){const chats=results[1].data||[],groups=results[2].data||[];const groupKeys=groups.map(g=>g.group_id);if(lvkSeen.groupReady){const added=groupKeys.filter(x=>!lvkSeen.groups?.includes(x));if(added.length){lvkNotify('Вас добавили в группу');if($('chatPage').classList.contains('active'))loadChatGroups()}}lvkSeen.groups=groupKeys;lvkSeen.groupReady=true;
- const messages=await Promise.all(chats.map(c=>sb.from('shadow_direct_messages').select('id,user_id').eq('chat_id',c.id).order('created_at',{ascending:false}).limit(1)));const latest=messages.map((r,i)=>({chat:chats[i],m:r.data?.[0]})).filter(x=>x.m);const next={};latest.forEach(x=>{next[x.chat.id]=x.m.id;if(lvkSeen.dmReady&&lvkSeen.dm?.[x.chat.id]&&lvkSeen.dm[x.chat.id]!==x.m.id&&x.m.user_id!==uid)lvkNotify('Новое личное сообщение')});lvkSeen.dm=next;lvkSeen.dmReady=true;
+ const messages=await Promise.all(chats.map(c=>sb.from('shadow_direct_messages').select('id,user_id,message,created_at').eq('chat_id',c.id).order('created_at',{ascending:false}).limit(1)));const latest=messages.map((r,i)=>({chat:chats[i],m:r.data?.[0]})).filter(x=>x.m);const next={};const fresh=latest.filter(x=>lvkSeen.dmReady&&lvkSeen.dm?.[x.chat.id]!==x.m.id&&x.m.user_id!==uid);
+ const peers=fresh.map(x=>x.chat.user_a===uid?x.chat.user_b:x.chat.user_a);
+ const {data:profiles}=peers.length?await sb.from('shadow_profiles').select('user_id,nickname').in('user_id',peers):{data:[]};
+ const names=Object.fromEntries((profiles||[]).map(p=>[p.user_id,p.nickname]));
+ latest.forEach(x=>{next[x.chat.id]=x.m.id});
+ fresh.forEach(x=>{const peer=x.chat.user_a===uid?x.chat.user_b:x.chat.user_a;lvkNotify(x.m.message||'Новое личное сообщение',{kind:'dm',chatId:x.chat.id,peer,label:names[peer]?'@'+names[peer]:'Личный чат',messageId:x.m.id})});
+ lvkSeen.dm=next;lvkSeen.dmReady=true;
+ if($('chatPage').classList.contains('active'))loadDirectChats().catch(console.error);
  }
  }catch(e){console.warn('LVK notifications:',e)}finally{lvkPollBusy=false}}
-setInterval(lvkPoll,25000);setTimeout(lvkPoll,3000);lvkLoadNotices();
+document.addEventListener('click',e=>{if(e.target.closest('.lvk-more-support > .lvk-more-link'))lvkMarkSupportRead()});
+setInterval(lvkPoll,12000);setTimeout(lvkPoll,3000);lvkLoadNotices();
 </script><script defer="" src="./lvk-push.js"></script>
 <!-- LVK premium messenger and More enhancements -->
 <div class="lvk-overlay" hidden="" id="lvkCreateModal" role="presentation">

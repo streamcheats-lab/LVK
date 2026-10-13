@@ -1,0 +1,12 @@
+/* LVK v9: contacts, blocked tab and Telegram-like notices */
+#lvkSavedContacts[hidden],#lvkBlockedContacts[hidden]{display:none!important}
+#contactsPage .contacts-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#contactsPage .contacts-row>span:not(.avatar){flex:1 1 140px;min-width:0;overflow-wrap:anywhere}
+#contactsPage .contact-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+#contactsPage .contact-actions button{min-height:34px;padding:8px 10px;font-size:12px}
+#blockedUsersList .dm-result{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.lvk-notice-row{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:#151625;border:1px solid #393454;color:#fff;padding:12px;border-radius:14px;margin:5px 0;cursor:pointer}
+.lvk-notice-row:hover{border-color:#8555f8;background:#1e1935}
+.lvk-notice-content{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.lvk-notice-content>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d6d0ea}
+.lvk-notice-content small{color:#9992b2;font-size:11px}
