@@ -1,0 +1,23 @@
+/* LVK Premium v6: compact contacts, desktop search and ticket archive */
+#contactsPage{max-width:920px;margin:0 auto;padding:0 0 12px!important}
+#contactsPage .title{margin:4px 0 8px!important;line-height:1.2}
+#contactsPage>.muted{margin:0 0 10px!important;line-height:1.4}
+#contactsPage .lvk-subtabs{margin:8px 0 10px!important;gap:7px}
+#contactsPage .lvk-subtabs button{padding:10px 12px!important;min-height:40px}
+#contactsPage .card{padding:15px!important;margin-bottom:9px!important}
+#contactsPage .card h3{margin:0 0 8px!important}
+#contactsPage .card>.muted{margin:0 0 9px!important}
+#contactsPage .contacts-row{margin:5px 0!important;padding:9px 11px!important;min-height:48px}
+#contactsPage .contacts-row .contact-actions{margin-left:auto}
+#contactsPage .contacts-row>span{min-width:0;overflow-wrap:break-word;word-break:normal}
+#nicknameResult{min-width:0;overflow-wrap:normal!important;word-break:normal!important}
+#nicknameResult .dm-result{display:flex!important;flex-flow:row wrap!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;min-width:0;width:100%;padding:10px 8px!important}
+#nicknameResult .dm-result strong{display:block!important;flex:1 1 160px!important;min-width:120px!important;width:auto!important;white-space:normal!important;word-break:normal!important;overflow-wrap:anywhere!important;writing-mode:horizontal-tb!important;text-orientation:mixed!important}
+#nicknameResult .dm-result button{flex:0 0 auto!important;white-space:nowrap!important;min-width:max-content!important}
+.lvk-ticket-tabs{display:flex;gap:8px;margin:12px 0 8px}
+.lvk-ticket-tabs button{background:#17182b;color:#aaa8c4;border:1px solid #393452;border-radius:12px;padding:10px 16px;font-weight:750}
+.lvk-ticket-tabs button.active{color:#fff;background:linear-gradient(120deg,#7645e8,#4855e4);border-color:#956cff}
+#supportInbox{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+#supportInbox .lvk-ticket-entry{margin:0!important;white-space:normal;text-align:left}
+@media(min-width:800px){#contactsPage{padding-top:0!important}#nicknameResult .dm-result{flex-wrap:nowrap!important}}
+@media(max-width:600px){#contactsPage .card{padding:12px!important}#contactsPage .contacts-row{flex-wrap:wrap}#nicknameResult .dm-result strong{flex-basis:100%!important}}
