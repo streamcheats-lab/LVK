@@ -1,0 +1,8 @@
+/* Profile and settings: keep final controls clear of floating bottom navigation */
+#profilePage,#settings{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))!important;scroll-margin-bottom:150px}
+#profilePage>.card:last-child,#settings>.card:last-child{margin-bottom:26px!important}
+@media(max-width:600px){#profilePage,#settings{padding-bottom:calc(190px + env(safe-area-inset-bottom,0px))!important}.shell{padding-bottom:calc(190px + env(safe-area-inset-bottom,0px))!important}}
+.lvk-avatar-settings{margin-bottom:14px}.lvk-avatar-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.lvk-avatar-upload{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:12px 18px;border-radius:13px;font-weight:700}
+.lvk-profile-avatar,.avatar{position:relative;overflow:hidden;flex-shrink:0}.lvk-profile-avatar img,.avatar img{width:100%;height:100%;display:block;object-fit:cover;border-radius:inherit}.lvk-profile-avatar{width:74px;height:74px;border:2px solid #8864fa}.avatar{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#6846ca,#353b91);font-weight:750;color:#fff}
+.lvk-avatar-message{display:grid;grid-template-columns:32px minmax(0,1fr);gap:2px 9px;align-items:start}.lvk-avatar-message>.avatar{width:32px;height:32px;grid-row:span 2}.lvk-avatar-message>.muted{min-width:0}.lvk-avatar-message>div:last-child{grid-column:2;min-width:0;overflow-wrap:anywhere}
+.person-line>.avatar{margin-right:6px}.lvk-avatar-settings .notice{margin-top:10px}
