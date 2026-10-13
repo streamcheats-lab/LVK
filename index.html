@@ -110,7 +110,7 @@ async function loadDirectChats(){
  const peers=visible.map(c=>c.user_a===currentUser.id?c.user_b:c.user_a);
  const {data:profiles}=peers.length?await sb.from('shadow_profiles').select('user_id,nickname').in('user_id',peers):{data:[]};
  const names=Object.fromEntries((profiles||[]).map(p=>[p.user_id,p.nickname]));
- visible.forEach(c=>{const peer=c.user_a===currentUser.id?c.user_b:c.user_a;const label=names[peer]?'@'+names[peer]:'Личный чат';const b=document.createElement('button');b.className='secondary';b.textContent='✉ '+label;b.dataset.dmId=c.id;b.onclick=()=>openDirectChat(c.id,label,peer).catch(e=>chatInfo('Ошибка открытия: '+e.message));b.classList.toggle('selected',activeDirectChat?.id===c.id);b.prepend(lvkAvatar(label));b.classList.add('person-line');box.append(b)});
+ visible.forEach(c=>{const peer=c.user_a===currentUser.id?c.user_b:c.user_a;const label=names[peer]?'@'+names[peer]:'Личный чат';const b=document.createElement('button');b.className='secondary';b.textContent='✉ '+label;b.dataset.dmId=c.id;b.dataset.peerId=peer;b.onclick=()=>openDirectChat(c.id,label,peer).catch(e=>chatInfo('Ошибка открытия: '+e.message));b.classList.toggle('selected',activeDirectChat?.id===c.id);b.prepend(lvkAvatar(label));b.classList.add('person-line');box.append(b)});
  if(!visible.length)box.textContent='Личных чатов пока нет';
 }
 async function openDirectWith(u){
@@ -121,7 +121,7 @@ async function openDirectWith(u){
 async function openDirectChat(id,label,peer){
  if(!currentUser||!proActive)return;
  const {error:showError}=await sb.rpc('shadow_dm_show',{p_chat:id});if(showError)throw showError;
- activeDirectChat={id,label,peer};activeChatGroup=null;$('chatTitle').textContent='✉ '+label;
+ activeDirectChat={id,label,peer};activeChatGroup=null;$('chatTitle').textContent='✉ '+label;lvkSetChatPresence(peer);
  Array.from($('dmChats').children).forEach(b=>b.classList.toggle('selected',b.dataset.dmId===id));
  Array.from($('chatGroups').children).forEach(b=>b.classList.remove('selected'));
  $('groupMembersButton').style.display='none';$('groupMembersPanel').style.display='none';$('groupLeaveDelete').style.display='none';$('copyInviteButton').disabled=true;
@@ -187,7 +187,7 @@ async function refreshChatMessages(group){
 }
 async function openChatGroup(group){
  if(!currentUser||!proActive)return;
- hideDmControls();activeDirectChat=null;activeChatGroup=group;$('chatTitle').textContent=group.name;$('groupAddPanel').style.display=group.is_system?'none':'block';refreshGroupContactOptions();
+ hideDmControls();activeDirectChat=null;activeChatGroup=group;$('chatTitle').textContent=group.name;lvkSetChatPresence(null);$('groupAddPanel').style.display=group.is_system?'none':'block';refreshGroupContactOptions();
  Array.from($('dmChats').children).forEach(b=>b.classList.remove('selected'));
  if(directRealtime){await sb.removeChannel(directRealtime);directRealtime=null}
  $('groupMembersButton').style.display='inline-block';$('groupMembersPanel').style.display='none';updateGroupAction(group);$('copyInviteButton').disabled=group.is_system||!group.invite_code;
@@ -216,7 +216,7 @@ async function sendChatMessage(){
 }
 async function createChatGroup(){
  if(!currentUser||!proActive)return chatInfo('Для создания группы нужен PRO');const input=$('newGroupName'),name=input.value.trim();if(name.length<3)return chatInfo('Название: минимум 3 символа');
- try{const {error}=await sb.rpc('create_chat_group',{p_name:name,p_description:''});if(error)throw error;input.value='';activeChatGroup=null;await loadChatGroups();chatInfo('Группа создана')}catch(e){chatInfo('Ошибка создания: '+e.message)}
+ try{const {error}=await sb.rpc('create_chat_group',{p_name:name,p_description:''});if(error)throw error;input.value='';activeChatGroup=null;await loadChatGroups();chatInfo('Группа создана');return true}catch(e){chatInfo('Ошибка создания: '+e.message);return false}
 }
 async function joinChatGroup(){
  if(!currentUser||!proActive)return chatInfo('Для вступления нужен PRO');const input=$('chatInviteCode');let code=input.value.trim();
@@ -228,7 +228,7 @@ $('sendChatButton').onclick=()=>activeDirectChat?sendDirectMessage():sendChatMes
 $('chatMessageInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();activeDirectChat?sendDirectMessage():sendChatMessage()}});
 $('createGroupButton').onclick=createChatGroup;
 $('joinGroupButton').onclick=joinChatGroup;
-$('copyInviteButton').onclick=async()=>{if(!activeChatGroup?.invite_code||activeChatGroup.is_system)return;const link=new URL(location.href);link.searchParams.set('invite',activeChatGroup.invite_code);try{await navigator.clipboard.writeText(link.toString());chatInfo('Ссылка скопирована')}catch{chatInfo('Ссылка: '+link.toString())}};
+$('copyInviteButton').onclick=()=>lvkOpenInviteModal();
 const inviteParam=new URL(location.href).searchParams.get('invite');if(inviteParam){$('chatInviteCode').value=inviteParam;}
 // ADMIN: доступ проверяется серверной функцией, не клиентским флагом.
 let shadowAdmin=false;
@@ -277,7 +277,7 @@ async function loadSupportNicknames(ids){
 }
 function supportUserLabel(uid){return supportNicknames[uid]?'@'+supportNicknames[uid]:'Пользователь'}
 function supportMessageNode(m){const el=document.createElement('div');el.style.cssText='background:#202a35;border-radius:10px;padding:10px;margin:7px 0;overflow-wrap:anywhere';const h=document.createElement('div');h.className='muted';h.textContent=(m.is_staff?'🛡 Поддержка':'👤 '+supportUserLabel(m.user_id))+' · '+new Date(m.created_at).toLocaleString('ru-RU');const t=document.createElement('div');t.textContent=m.message;el.append(h,t);return el}
-async function loadSupportMessages(){const box=$('supportMessages');if(!box)return;if(!sb||!currentUser){box.textContent='Войди в аккаунт в разделе «Ещё», чтобы написать в поддержку.';$('supportInput').disabled=true;$('supportSend').disabled=true;return} $('supportInput').disabled=false;$('supportSend').disabled=false;const {data,error}=await sb.from('support_messages').select('id,user_id,message,is_staff,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:true}).limit(200);if(error){box.textContent='Поддержка пока не подключена. Проверь SQL: '+error.message;return}await loadSupportNicknames([currentUser.id]);box.replaceChildren();if(!data.length)box.textContent='Напиши первое сообщение — администратор скоро с тобой свяжется.';else data.forEach(m=>box.append(supportMessageNode(m)));box.scrollTop=box.scrollHeight;if(supportChannel)await sb.removeChannel(supportChannel);supportChannel=sb.channel('support-'+currentUser.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'support_messages',filter:'user_id=eq.'+currentUser.id},()=>{if($('chatPage').classList.contains('active'))loadSupportMessages()}).subscribe()}
+async function loadSupportMessages(){const box=$('supportMessages');if(!box)return;if(!sb||!currentUser){box.textContent='Войди в аккаунт в разделе «Ещё», чтобы написать в поддержку.';$('supportInput').disabled=true;$('supportSend').disabled=true;return} $('supportInput').disabled=false;$('supportSend').disabled=false;const {data,error}=await sb.from('support_messages').select('id,user_id,message,is_staff,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:true}).limit(200);if(error){box.textContent='Поддержка пока не подключена. Проверь SQL: '+error.message;return}await loadSupportNicknames([currentUser.id]);box.replaceChildren();if(!data.length)box.textContent='Напиши первое сообщение — администратор скоро с тобой свяжется.';else data.forEach(m=>box.append(supportMessageNode(m)));box.scrollTop=box.scrollHeight;if(supportChannel)await sb.removeChannel(supportChannel);supportChannel=sb.channel('support-'+currentUser.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'support_messages',filter:'user_id=eq.'+currentUser.id},()=>{if($('settings').classList.contains('active'))loadSupportMessages()}).subscribe()}
 $('supportSend').onclick=async()=>{if(!currentUser){$('supportInfo').textContent='Сначала войди в аккаунт.';return}const inp=$('supportInput'),msg=inp.value.trim();if(!msg)return;$('supportSend').disabled=true;const {error}=await sb.from('support_messages').insert({user_id:currentUser.id,message:msg});$('supportSend').disabled=false;if(error){$('supportInfo').textContent='Ошибка: '+error.message;return}inp.value='';$('supportInfo').textContent='Сообщение отправлено.';await loadSupportMessages()};
 async function loadSupportInbox(){if(!shadowAdmin)return;const {data,error}=await sb.from('support_messages').select('user_id,created_at').order('created_at',{ascending:false}).limit(1000);const box=$('supportInbox');box.replaceChildren();if(error){$('supportAdminInfo').textContent='Ошибка загрузки: '+error.message;return}const ids=[...new Set((data||[]).map(u=>u.user_id))];if(!ids.length){box.textContent='Обращений пока нет.';return}await loadSupportNicknames(ids);ids.forEach(uid=>{const b=document.createElement('button');b.type='button';b.className='secondary';b.style.margin='4px';b.textContent=supportNicknames[uid]?'@'+supportNicknames[uid]:'Пользователь '+uid.slice(0,8)+'…';b.onclick=()=>openSupportThread(uid);box.append(b)})}
 async function openSupportThread(uid){supportAdminUser=uid;const {data,error}=await sb.from('support_messages').select('id,user_id,message,is_staff,created_at').eq('user_id',uid).order('created_at',{ascending:true}).limit(200);const box=$('supportThread');box.replaceChildren();if(error){$('supportAdminInfo').textContent=error.message;return}await loadSupportNicknames([uid]);(data||[]).forEach(m=>box.append(supportMessageNode(m)));box.scrollTop=box.scrollHeight}
@@ -440,4 +440,29 @@ async function lvkPoll(){if(lvkPollBusy||!currentUser||!sb)return;lvkPollBusy=tr
  }
  }catch(e){console.warn('LVK notifications:',e)}finally{lvkPollBusy=false}}
 setInterval(lvkPoll,25000);setTimeout(lvkPoll,3000);lvkLoadNotices();
-</script><script src="./lvk-push.js" defer></script></body></html>
+</script><script src="./lvk-push.js" defer></script>
+<!-- LVK premium messenger and More enhancements -->
+<div id="lvkCreateModal" class="lvk-overlay" hidden role="presentation">
+ <div class="lvk-dialog" role="dialog" aria-modal="true" aria-labelledby="lvkCreateTitle">
+  <button class="lvk-modal-close" type="button" data-close-lvk aria-label="Закрыть">×</button>
+  <div class="lvk-dialog-icon">✦</div><h2 id="lvkCreateTitle">Создание группы</h2>
+  <p>Общайся, обсуждай сделки и приглашай участников в своё сообщество LVK.</p>
+  <label for="lvkModalGroupName">Название группы</label><input id="lvkModalGroupName" maxlength="80" placeholder="Например, Торговля USD" autocomplete="off">
+  <p id="lvkCreateError" class="lvk-dialog-feedback" role="status"></p>
+  <button id="lvkConfirmGroup" class="primary lvk-dialog-main" type="button">Создать группу</button>
+  <button class="secondary lvk-dialog-secondary" type="button" data-close-lvk>Отмена</button>
+ </div>
+</div>
+<div id="lvkInviteModal" class="lvk-overlay" hidden role="presentation">
+ <div class="lvk-dialog" role="dialog" aria-modal="true" aria-labelledby="lvkInviteTitle">
+  <button class="lvk-modal-close" type="button" data-close-lvk aria-label="Закрыть">×</button>
+  <div class="lvk-dialog-icon">🔗</div><h2 id="lvkInviteTitle">Пригласи друзей</h2>
+  <p>Поделись ссылкой — участники смогут присоединиться к группе через LVK.</p>
+  <label for="lvkInviteLink">Ссылка-приглашение</label><input id="lvkInviteLink" readonly aria-label="Ссылка приглашения">
+  <p id="lvkInviteFeedback" class="lvk-dialog-feedback" role="status"></p>
+  <button id="lvkModalCopy" class="primary lvk-dialog-main" type="button">🔗 Скопировать ссылку</button>
+  <button id="lvkModalShare" class="secondary lvk-dialog-secondary" type="button">Поделиться</button>
+ </div>
+</div>
+<link rel="stylesheet" href="./lvk-extras.css"><script src="./lvk-extras.js" defer></script>
+</body></html>
