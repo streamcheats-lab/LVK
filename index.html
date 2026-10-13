@@ -482,7 +482,7 @@ async function lvkOpenNotice(n){
  }catch(e){lvkToast('Не удалось открыть сообщение: '+e.message)}
 }
 function lvkRenderNotices(){
- const count=$('lvkNoticeCount'),box=$('lvkNotificationsList');count.textContent=String(lvkNotices.length);box.replaceChildren();
+ const count=$('lvkNoticeCount'),box=$('lvkNotificationsList');count.textContent=String(lvkNotices.length);count.title=lvkNotices.length+' непрочитанных';box.replaceChildren();
  if(!lvkNotices.length){box.textContent='Непрочитанных уведомлений нет';return}
  lvkNotices.forEach(n=>{
   const b=document.createElement('button');b.type='button';b.className='lvk-notice-row';
@@ -500,7 +500,7 @@ function lvkNotify(text,extra={}){
  if(notice.messageId&&lvkNotices.some(n=>n.messageId===notice.messageId))return;
  lvkNotices.unshift(notice);lvkNotices=lvkNotices.slice(0,50);lvkSaveNotices();lvkToast(text)
 }
-$('lvkNoticeButton').onclick=()=>{navigate('settings');$('lvkNotificationsCard').style.display='block';lvkRenderNotices()};
+$('lvkNoticeButton').onclick=()=>{navigate('settings');$('lvkNotificationsCard').style.display='block';lvkRenderNotices();$('lvkNotificationsCard').scrollIntoView({behavior:'smooth',block:'start'})};
 $('lvkClearNotices').onclick=()=>{lvkNotices=[];lvkSaveNotices()};
 function lvkUpdateBuy(){const top=$('lvkBuyTop');if(top)top.style.display=proActive?'none':'inline-flex'}
 setInterval(lvkUpdateBuy,1500);lvkUpdateBuy();
@@ -537,8 +537,29 @@ async function lvkPoll(){if(lvkPollBusy||!currentUser||!sb)return;lvkPollBusy=tr
  }
  }catch(e){console.warn('LVK notifications:',e)}finally{lvkPollBusy=false}}
 document.addEventListener('click',e=>{if(e.target.closest('.lvk-more-support > .lvk-more-link'))lvkMarkSupportRead()});
-setInterval(lvkPoll,12000);setTimeout(lvkPoll,3000);lvkLoadNotices();
-</script><script defer="" src="./lvk-push.js"></script>
+// Desktop and mobile: refresh notifications regularly, including after tab focus.
+setInterval(lvkPoll,5000);
+setTimeout(lvkPoll,1200);
+window.addEventListener('focus',()=>lvkPoll());
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)lvkPoll()});
+window.addEventListener('storage',event=>{if(event.key===lvkNoticeKey())lvkLoadNotices()});
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.addEventListener('message',async event=>{
+  if(event.data?.type!=='LVK_OPEN_CHAT')return;
+  const chatId=event.data.chatId;
+  if(chatId&&currentUser&&proActive){
+   const item=lvkNotices.find(n=>n.kind==='dm'&&n.chatId===chatId);
+   if(item){await lvkOpenNotice(item);return;}
+  }
+  switchShadowChatTab('groups');navigate('chatPage');
+ });
+}
+const lvkDeepLink=new URLSearchParams(location.search);
+if(lvkDeepLink.get('page')==='chatPage'){
+ window.addEventListener('load',()=>{if(currentUser){switchShadowChatTab('groups');navigate('chatPage')}else setTimeout(()=>{if(currentUser){switchShadowChatTab('groups');navigate('chatPage')}},1800)},{once:true});
+}
+lvkLoadNotices();
+</script><script src="./lvk-push-config.js"></script><script defer="" src="./lvk-push.js"></script>
 <!-- LVK premium messenger and More enhancements -->
 <div class="lvk-overlay" hidden="" id="lvkCreateModal" role="presentation">
 <div aria-labelledby="lvkCreateTitle" aria-modal="true" class="lvk-dialog" role="dialog">

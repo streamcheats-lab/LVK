@@ -10,3 +10,13 @@
 .lvk-notice-content{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
 .lvk-notice-content>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d6d0ea}
 .lvk-notice-content small{color:#9992b2;font-size:11px}
+/* LVK v11: desktop notifications panel and readable notification rows */
+#lvkNotificationsCard{scroll-margin-top:18px}
+#lvkNotificationsList{display:flex;flex-direction:column;gap:8px;min-width:0}
+#lvkNotificationsList .lvk-notice-row{display:flex;align-items:center;gap:12px;width:100%;min-width:0;text-align:left;padding:12px 14px;border:1px solid #34314f;border-radius:14px;background:#171728;color:#f5f3ff;cursor:pointer}
+#lvkNotificationsList .lvk-notice-content{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px;overflow-wrap:anywhere}
+#lvkNotificationsList .lvk-notice-content strong{font-size:14px}
+#lvkNotificationsList .lvk-notice-content span{font-size:13px;color:#d5d1e8}
+#lvkNotificationsList .lvk-notice-content small{font-size:11px;color:#aaa6c5}
+#lvkNoticeButton{white-space:nowrap;flex-shrink:0}
+@media(min-width:800px){#lvkNotificationsCard{max-width:820px;margin-left:auto;margin-right:auto}}

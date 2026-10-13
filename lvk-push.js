@@ -1,5 +1,5 @@
 /* LVK Web Push UI. Set the public VAPID key below after generating keys. */
-const LVK_VAPID_PUBLIC_KEY = 'PASTE_YOUR_PUBLIC_VAPID_KEY_HERE';
+const LVK_VAPID_PUBLIC_KEY = String(window.LVK_VAPID_PUBLIC_KEY || '').trim();
 const lvkPushStatus = document.getElementById('lvkPushStatus');
 const lvkPushEnable = document.getElementById('lvkPushEnable');
 const lvkPushDisable = document.getElementById('lvkPushDisable');
@@ -24,11 +24,12 @@ lvkPushEnable.addEventListener('click',async()=>{
   lvkPushEnable.disabled=true;
   try {
     if(!currentUser) throw Error('Сначала войдите в аккаунт в разделе «Ещё»');
-    if(LVK_VAPID_PUBLIC_KEY.startsWith('PASTE_')) throw Error('Администратор ещё не настроил ключ Web Push');
+    if(!LVK_VAPID_PUBLIC_KEY || LVK_VAPID_PUBLIC_KEY.includes('PASTE_')) throw Error('Публичный VAPID-ключ не настроен: открой lvk-push-config.js и вставь LVK_VAPID_PUBLIC_KEY из Supabase');
     const reg=await lvkPushRegistration();
     const permission=await Notification.requestPermission();
     if(permission!=='granted') throw Error('Разрешение на уведомления не предоставлено');
-    const existing=await reg.pushManager.getSubscription();
+    let existing=await reg.pushManager.getSubscription();
+    if(existing){const oldKey=existing.options?.applicationServerKey;const newKey=lvkBase64ToBytes(LVK_VAPID_PUBLIC_KEY);if(oldKey && (new Uint8Array(oldKey).length!==newKey.length || new Uint8Array(oldKey).some((b,i)=>b!==newKey[i]))){await existing.unsubscribe();existing=null;}}
     const sub=existing || await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:lvkBase64ToBytes(LVK_VAPID_PUBLIC_KEY)});
     await lvkPushSaveSubscription(sub);
     lvkPushSay('Уведомления включены. Сообщения будут приходить в фоне.');
