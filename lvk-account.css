@@ -1,0 +1,20 @@
+/* LVK account, contacts, profile and about surfaces */
+.lvk-more-pro[hidden],.lvk-account-overlay[hidden],#lvkBlockedContacts[hidden],#lvkSavedContacts[hidden]{display:none!important}
+.lvk-more-menu{display:grid;gap:9px;margin:14px 0}.lvk-more-menu .lvk-more-link{width:100%;text-align:left}
+.lvk-more-menu .lvk-more-link>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:4px}
+.lvk-more-menu .lvk-more-link small{color:#a7a6c2;font-size:12px}
+.lvk-subtabs{display:flex;gap:9px;margin:15px 0}.lvk-subtabs button{flex:1;border:1px solid #37304f;border-radius:13px;background:#151423;color:#aaa6c2;padding:13px 8px;font-weight:700}
+.lvk-subtabs button.active{color:#fff;background:linear-gradient(125deg,#6f43e9,#4a58dd);border-color:#896aff}
+#contactsPage>.muted{margin:0 0 14px}#contactsPage .card{margin:0 0 14px}
+.lvk-profile-banner{display:flex;gap:15px;align-items:center;border:1px solid #39304f;border-radius:19px;padding:20px;background:linear-gradient(115deg,#1b172d,#10111c);margin-bottom:14px}
+.lvk-profile-avatar{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:26px;font-weight:900;background:linear-gradient(145deg,#5131bd,#8252ff);box-shadow:0 0 22px #6b48ff45}
+.lvk-profile-banner strong{font-size:19px}.lvk-profile-banner p{margin:5px 0 0;color:#aaa6c2;font-size:13px}
+#profilePage>.card{margin-bottom:14px}
+.lvk-about-mark{text-align:center;padding:38px 12px 28px;color:#b69dff;letter-spacing:.16em;font-weight:700}
+.lvk-about-logo{font-weight:1000;font-size:clamp(65px,15vw,125px);font-style:italic;letter-spacing:-.09em;line-height:1;background:linear-gradient(135deg,#e7d8ff,#8356ff,#4c65fc);color:transparent;background-clip:text;filter:drop-shadow(0 0 20px #7451ff55)}
+.lvk-about-mark small{display:block;font-size:12px;margin-top:18px;letter-spacing:.13em}
+.lvk-account-overlay{position:fixed;inset:0;z-index:8000;background:#03030bc9;backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:16px}
+.lvk-account-modal{width:min(100%,470px);max-height:92dvh;overflow:auto;background:linear-gradient(145deg,#19162a,#0b0c15);border:1px solid #654aa1;border-radius:22px;padding:20px;box-shadow:0 22px 90px #000b}
+.lvk-modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.lvk-modal-top h2{margin:0;font-size:21px}.lvk-modal-top button{background:#26213b;color:#fff;border:0;border-radius:10px;width:38px;height:38px;font-size:20px}
+.lvk-account-modal>.card{border:0;background:transparent;padding:0}.lvk-account-modal .formgrid{grid-template-columns:1fr}
+@media(max-width:420px){.nav button{font-size:9px!important;padding:7px 1px!important}.lvk-subtabs button{font-size:12px}}
