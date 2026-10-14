@@ -21,3 +21,5 @@
 #contactsPage .contacts-row .contact-actions button{font-size:12px!important;min-height:38px!important;padding:8px 11px!important;border-radius:12px!important;flex:1 1 auto}
 #contactsPage .contacts-row .lvk-delete-contact{border:1px solid #ab4e7d!important;color:#ffd1e5!important;background:#3b1a32!important}
 @media(max-width:750px){#chatPage.lvk-premium-chat .chat-layout{grid-template-columns:1fr!important}#chatPage.lvk-premium-chat .chat-layout>.card{padding:12px!important}#chatPage.lvk-premium-chat .chat-messages{height:340px!important}#chatPage.lvk-premium-chat .chat-head{flex-wrap:wrap!important}#chatPage.lvk-premium-chat .chat-head button{min-height:34px!important}}
+
+#chatPage .lvk-group-online{display:block;color:#32cfaa;font-size:12px;margin-top:5px;margin-left:48px;font-weight:600}#chatPage #lvkGroupPresence{display:block;color:#32cfaa;margin:3px 0 8px;font-size:12px}#chatPage #lvkGroupPresence[hidden]{display:none}

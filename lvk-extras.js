@@ -68,6 +68,31 @@
  });
  // Presence is session-based. Only users connected to this Supabase presence channel appear online.
  let presenceChannel=null,presenceUser=null;const onlineIds=new Set();
+ const groupMembers=new Map();let membersLoadedFor=null;
+ async function loadGroupPresenceMembers(){
+  if(!sb||!currentUser?.id)return;
+  const {data,error}=await sb.rpc('lvk_my_group_presence_members');
+  if(error){console.warn('LVK group online RPC:',error.message);return}
+  groupMembers.clear();
+  for(const row of data||[]){if(!groupMembers.has(row.group_id))groupMembers.set(row.group_id,new Set());groupMembers.get(row.group_id).add(row.user_id)}
+  membersLoadedFor=currentUser.id;updatePresenceUI();
+ }
+ window.lvkRefreshGroupPresence=()=>loadGroupPresenceMembers().catch(console.warn);
+ function updateGroupPresence(){
+  document.querySelectorAll('#chatGroups [data-group-id]').forEach(button=>{
+   const ids=groupMembers.get(button.dataset.groupId);
+   let badge=button.querySelector('.lvk-group-online');
+   if(!badge){badge=document.createElement('small');badge.className='lvk-group-online';button.append(badge)}
+   badge.textContent=ids?'✓ Онлайн: '+[...ids].filter(id=>onlineIds.has(id)).length:'Онлайн: —';
+  });
+  if(typeof activeChatGroup!=='undefined'&&activeChatGroup?.id){
+   const ids=groupMembers.get(activeChatGroup.id);
+   let badge=$('lvkGroupPresence');if(!badge){badge=document.createElement('small');badge.id='lvkGroupPresence';$('chatTitle').after(badge)}
+   badge.textContent=ids?'✓ Онлайн: '+[...ids].filter(id=>onlineIds.has(id)).length:'Онлайн: —';badge.hidden=false;
+  }else{const badge=$('lvkGroupPresence');if(badge)badge.hidden=true}
+ }
+ new MutationObserver(()=>updateGroupPresence()).observe($('chatGroups'),{childList:true});
+ 
  window.lvkSetChatPresence=peer=>{
   let badge=$('lvkChatPresence');if(!badge){badge=document.createElement('div');badge.id='lvkChatPresence';$('chatTitle').after(badge)}
   badge.dataset.peer=peer||'';badge.hidden=!peer;updatePresenceUI();
@@ -78,17 +103,18 @@
    const online=onlineIds.has(button.dataset.peerId);status.textContent=online?'✓ В сети':'✕ Не в сети';status.classList.toggle('online',online);
   });
   const badge=$('lvkChatPresence');if(badge&&!badge.hidden){const online=onlineIds.has(badge.dataset.peer);badge.textContent=online?'✓ В сети':'✕ Не в сети';badge.classList.toggle('online',online)}
+  updateGroupPresence();
  }
  const listObserver=new MutationObserver(()=>updatePresenceUI());listObserver.observe($('dmChats'),{childList:true});
  async function ensurePresence(){
-  if(!sb||!currentUser?.id){if(presenceChannel){await sb?.removeChannel(presenceChannel);presenceChannel=null;presenceUser=null}onlineIds.clear();updatePresenceUI();return}
-  if(presenceChannel&&presenceUser===currentUser.id)return;
+  if(!sb||!currentUser?.id){if(presenceChannel){await sb?.removeChannel(presenceChannel);presenceChannel=null;presenceUser=null}onlineIds.clear();groupMembers.clear();membersLoadedFor=null;updatePresenceUI();return}
+  if(presenceChannel&&presenceUser===currentUser.id){if(membersLoadedFor!==currentUser.id)await loadGroupPresenceMembers();return;}
   if(presenceChannel)await sb.removeChannel(presenceChannel);
-  presenceUser=currentUser.id;
+  presenceUser=currentUser.id;await loadGroupPresenceMembers();
   presenceChannel=sb.channel('lvk-presence-v1',{config:{presence:{key:currentUser.id}}});
   presenceChannel.on('presence',{event:'sync'},()=>{
    onlineIds.clear();const state=presenceChannel.presenceState();Object.keys(state).forEach(id=>{if(state[id]?.length)onlineIds.add(id)});updatePresenceUI();
   }).subscribe(async status=>{if(status==='SUBSCRIBED'){try{await presenceChannel.track({connected_at:new Date().toISOString()})}catch(e){console.warn('Presence tracking unavailable',e)}}});
  }
- setInterval(()=>ensurePresence().catch(console.warn),6000);ensurePresence().catch(console.warn);
+ setInterval(()=>ensurePresence().catch(console.warn),6000);setInterval(()=>{if(currentUser?.id)loadGroupPresenceMembers().catch(console.warn)},60000);ensurePresence().catch(console.warn);
 })();
