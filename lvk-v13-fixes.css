@@ -1,0 +1,13 @@
+/* v13: contact action menu is positioned in viewport, never clipped by card or page */
+#contactsPage .contacts-row{position:relative;overflow:visible!important;min-width:0}
+#contactsPage .contacts-row>span{min-width:0;overflow-wrap:anywhere}
+#contactsPage details.lvk-contact-menu{position:relative;flex-shrink:0;z-index:auto}
+#contactsPage details.lvk-contact-menu[open]{z-index:10000!important}
+#contactsPage details.lvk-contact-menu[open]>.contact-actions{
+ position:fixed!important;top:var(--lvk-menu-top,70px)!important;left:var(--lvk-menu-left,8px)!important;right:auto!important;
+ width:min(230px,calc(100vw - 16px))!important;min-width:0!important;
+ max-height:min(320px,calc(100dvh - 24px))!important;overflow-y:auto!important;
+ display:flex!important;flex-direction:column!important;gap:5px!important;
+ z-index:10001!important;box-sizing:border-box!important;
+}
+#contactsPage details.lvk-contact-menu[open]>.contact-actions button{white-space:normal!important;min-height:39px!important}

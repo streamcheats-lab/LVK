@@ -120,11 +120,11 @@ let lvkDmRenderedSignature='';
 async function loadDirectChats(){
  const version=++lvkDmRenderVersion;
  const box=$('dmChats');
- if(!currentUser||!proActive){box.replaceChildren();lvkDmRenderedSignature='';return;}
+ if(!currentUser||!proActive){if(!currentUser){box.replaceChildren();lvkDmRenderedSignature='';}return;}
  const {data,error}=await sb.from('shadow_direct_chats').select('id,user_a,user_b,created_at').or('user_a.eq.'+currentUser.id+',user_b.eq.'+currentUser.id).order('created_at',{ascending:false});
  if(version!==lvkDmRenderVersion)return;
  if(error){if(!box.children.length)box.textContent='Личные чаты: '+error.message;return}
- await loadDmStates();
+ try{await loadDmStates()}catch(e){console.warn('LVK: DM states unavailable',e);return;}
  if(version!==lvkDmRenderVersion)return;
  const visible=(data||[]).filter(c=>!dmStates[c.id]?.hidden);
  const peers=visible.map(c=>c.user_a===currentUser.id?c.user_b:c.user_a);
@@ -230,8 +230,11 @@ async function initShadowChat(){
 async function loadChatGroups(){
  const {data,error}=await sb.from('chat_members').select('group_id,chat_groups(id,name,is_system,invite_code,created_by,avatar_path)').eq('user_id',currentUser.id);
  if(error)throw error;
- const box=$('chatGroups');box.replaceChildren();let groups=(data||[]).map(r=>r.chat_groups).filter(Boolean);
+ const box=$('chatGroups');let groups=(data||[]).map(r=>r.chat_groups).filter(Boolean);
  groups.sort((a,b)=>Number(b.is_system)-Number(a.is_system));
+ const signature=JSON.stringify(groups.map(g=>[g.id,g.name,g.is_system,g.avatar_path]));
+ if(box.dataset.groupsSignature===signature){box.querySelectorAll('[data-group-id]').forEach(b=>b.classList.toggle('selected',$('chatPage').classList.contains('lvk-thread-open') && activeChatGroup?.id===b.dataset.groupId));return;}
+ box.dataset.groupsSignature=signature;box.replaceChildren();
  if(!groups.length){box.textContent='Пока нет групп';return}
  groups.forEach(group=>{let button=document.createElement('button');button.className='secondary'+($('chatPage').classList.contains('lvk-thread-open') && activeChatGroup?.id===group.id?' selected':'');button.textContent=(group.is_system?'★ ':'')+group.name;button.dataset.groupId=group.id;button.onclick=()=>openChatGroup(group).catch(e=>chatInfo(e.message));const ga=lvkAvatar(group.name);if(group.avatar_path){const gi=document.createElement('img');gi.src=sb.storage.from('lvk-group-avatars').getPublicUrl(group.avatar_path).data.publicUrl;gi.alt='';ga.prepend(gi)}button.prepend(ga);button.classList.add('person-line');box.appendChild(button)});
  // Do not automatically open a group when refreshing the chat list.
@@ -648,4 +651,4 @@ if(event.data?.type==='lvk-buy-back'){if(typeof navigate==='function')navigate(p
 if(event.data?.type==='lvk-buy-height'){const h=Number(event.data.height);if(Number.isFinite(h)&&h>250&&h<5000)frame.style.height=Math.ceil(h+12)+'px';}
 });
 })();
-</script><script defer src="./lvk-chat-reference.js?v=9"></script><link rel="stylesheet" href="./lvk-chat-scroll-fix.css?v=1"><link rel="stylesheet" href="./lvk-chat-visibility.css?v=9"><script defer src="./lvk-chat-visibility.js?v=9"></script><script defer src="./lvk-v11-repair.js?v=11"></script><link rel="stylesheet" href="./lvk-members-fix.css?v=12"><script defer src="./lvk-members-fix.js?v=12"></script></body></html>
+</script><script defer src="./lvk-chat-reference.js?v=9"></script><link rel="stylesheet" href="./lvk-chat-scroll-fix.css?v=1"><link rel="stylesheet" href="./lvk-chat-visibility.css?v=9"><script defer src="./lvk-chat-visibility.js?v=9"></script><script defer src="./lvk-v11-repair.js?v=11"></script><link rel="stylesheet" href="./lvk-members-fix.css?v=12"><script defer src="./lvk-members-fix.js?v=12"></script><link rel="stylesheet" href="./lvk-v13-fixes.css?v=13"><script defer src="./lvk-v13-fixes.js?v=13"></script></body></html>
