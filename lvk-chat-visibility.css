@@ -1,11 +1,13 @@
-/* Chat conversation must never appear below the chat list until explicitly opened. */
-#chatPage.lvk-premium-chat #chatContent>.chat-layout{grid-template-columns:minmax(0,1fr)!important}
-#chatPage.lvk-premium-chat #chatContent>.chat-layout>.card:nth-child(2){display:none!important}
-#chatPage.lvk-premium-chat.lvk-thread-open #chatContent>.chat-layout>.card:nth-child(2){display:flex!important}
+/* Force a true single-pane chat list when no conversation is selected. */
+#chatPage #chatContent > .chat-layout { display:grid!important;grid-template-columns:minmax(0,1fr)!important; }
+#chatPage #chatContent > .chat-layout > .card:nth-child(2) { display:none!important; }
+#chatPage.lvk-thread-open #chatContent > .chat-layout > .card:nth-child(2) { display:flex!important; }
+#chatPage:not(.lvk-thread-open) #chatContent > .chat-layout > .card:first-child { display:block!important; }
 @media(min-width:751px){
- #chatPage.lvk-premium-chat.lvk-thread-open #chatContent>.chat-layout{grid-template-columns:minmax(260px,340px) minmax(0,1fr)!important}
+ #chatPage.lvk-thread-open #chatContent > .chat-layout { grid-template-columns:minmax(260px,340px) minmax(0,1fr)!important; }
 }
 @media(max-width:750px){
- #chatPage.lvk-premium-chat.lvk-thread-open #chatContent>.chat-layout>.card:first-child{display:none!important}
- #chatPage.lvk-premium-chat:not(.lvk-thread-open) #chatContent>.chat-layout>.card:first-child{display:block!important}
+ #chatPage #chatContent > .chat-layout { display:block!important; }
+ #chatPage.lvk-thread-open #chatContent > .chat-layout > .card:first-child { display:none!important; }
+ #chatPage.lvk-thread-open #chatContent > .chat-layout > .card:nth-child(2) { display:flex!important; }
 }

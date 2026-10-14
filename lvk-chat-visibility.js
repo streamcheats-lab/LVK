@@ -1,35 +1,29 @@
-/* Visibility is controlled by explicit conversation selection, not by rendered messages. */
+/* One source of truth for chat list / conversation visibility. */
 (()=>{
  const page=document.getElementById('chatPage');
  if(!page)return;
- const close=()=>page.classList.remove('lvk-thread-open');
+ const close=()=>{
+   if(typeof window.lvkCloseConversation==='function')window.lvkCloseConversation();
+   else page.classList.remove('lvk-thread-open');
+ };
  close();
- const open=()=>page.classList.add('lvk-thread-open');
- const chatLists=['dmChats','chatGroups'];
- for(const id of chatLists){
-   document.getElementById(id)?.addEventListener('click',event=>{
-     if(event.target.closest('button[data-group-id],button'))open();
-   });
- }
- page.querySelector('.lvk-chat-back')?.addEventListener('click',close);
- // Rebind if the back control is inserted after this script by a later module.
  page.addEventListener('click',event=>{
-   if(event.target.closest('.lvk-chat-back'))close();
+   if(event.target.closest('.lvk-chat-back')){event.preventDefault();close();return;}
+   const button=event.target.closest('#dmChats button[data-dm-id],#chatGroups button[data-group-id]');
+   if(button){page.classList.add('lvk-thread-open');return;}
  });
- // Switching tabs or leaving the chat screen must reset the conversation view.
  document.addEventListener('click',event=>{
-   const tab=event.target.closest('[data-page],#chatTabGroups,#chatTabSupport');
-   if(tab)close();
+   if(event.target.closest('[data-page],.nav button,.bottom-nav button,#chatTabGroups,#chatTabSupport')){
+     if(!event.target.closest('#dmChats,#chatGroups'))close();
+   }
  });
- // External entry points (contacts/search/notifications) open the thread explicitly.
  for(const id of ['contactsList','nicknameResult','lvkNotificationsList']){
    document.getElementById(id)?.addEventListener('click',event=>{
-     if(event.target.closest('button')){
-       // Let existing click handler navigate and load the conversation first.
-       queueMicrotask(()=>{
-         if(page.classList.contains('active') && document.getElementById('chatTitle')?.textContent?.trim()!=='Выбери чат')open();
-       });
-     }
+     if(!event.target.closest('button'))return;
+     queueMicrotask(()=>{
+       if(page.classList.contains('active') && document.getElementById('chatTitle')?.textContent?.trim()!=='Выбери чат')
+         page.classList.add('lvk-thread-open');
+     });
    });
  }
 })();
