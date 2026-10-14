@@ -1,29 +1,19 @@
-/* One source of truth for chat list / conversation visibility. */
+/* Chat navigation: close state is authoritative, even after asynchronous refreshes. */
 (()=>{
- const page=document.getElementById('chatPage');
- if(!page)return;
- const close=()=>{
-   if(typeof window.lvkCloseConversation==='function')window.lvkCloseConversation();
-   else page.classList.remove('lvk-thread-open');
- };
+ const page=document.getElementById('chatPage');if(!page)return;
+ const close=()=>{if(typeof window.lvkCloseConversation==='function')window.lvkCloseConversation();else page.classList.remove('lvk-thread-open');};
  close();
- page.addEventListener('click',event=>{
-   if(event.target.closest('.lvk-chat-back')){event.preventDefault();close();return;}
-   const button=event.target.closest('#dmChats button[data-dm-id],#chatGroups button[data-group-id]');
-   if(button){page.classList.add('lvk-thread-open');return;}
- });
- document.addEventListener('click',event=>{
-   if(event.target.closest('[data-page],.nav button,.bottom-nav button,#chatTabGroups,#chatTabSupport')){
-     if(!event.target.closest('#dmChats,#chatGroups'))close();
+ // Capture phase: close BEFORE any other handler changes tabs or rerenders.
+ document.addEventListener('click',e=>{
+   if(e.target.closest('.lvk-chat-back')){e.preventDefault();e.stopPropagation();close();return;}
+   if(e.target.closest('[data-page],.nav button,.bottom-nav button,#chatTabGroups,#chatTabSupport')){
+     if(!e.target.closest('#dmChats,#chatGroups'))close();
+   }
+ },true);
+ // Only a real click on a conversation may show the thread panel.
+ page.addEventListener('click',e=>{
+   if(e.target.closest('#dmChats button[data-dm-id],#chatGroups button[data-group-id]')){
+     page.classList.add('lvk-thread-open');
    }
  });
- for(const id of ['contactsList','nicknameResult','lvkNotificationsList']){
-   document.getElementById(id)?.addEventListener('click',event=>{
-     if(!event.target.closest('button'))return;
-     queueMicrotask(()=>{
-       if(page.classList.contains('active') && document.getElementById('chatTitle')?.textContent?.trim()!=='Выбери чат')
-         page.classList.add('lvk-thread-open');
-     });
-   });
- }
 })();

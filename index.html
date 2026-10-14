@@ -132,10 +132,10 @@ async function loadDirectChats(){
  if(version!==lvkDmRenderVersion)return;
  const names=Object.fromEntries((profiles||[]).map(p=>[p.user_id,p.nickname]));
  const signature=JSON.stringify(visible.map(c=>[c.id,c.user_a,c.user_b,names[c.user_a],names[c.user_b]]));
- if(signature===lvkDmRenderedSignature){box.querySelectorAll('[data-dm-id]').forEach(b=>b.classList.toggle('selected',activeDirectChat?.id===b.dataset.dmId));return}
+ if(signature===lvkDmRenderedSignature){box.querySelectorAll('[data-dm-id]').forEach(b=>b.classList.toggle('selected',$('chatPage').classList.contains('lvk-thread-open') && activeDirectChat?.id===b.dataset.dmId));return}
  lvkDmRenderedSignature=signature;
  box.replaceChildren();
- visible.forEach(c=>{const peer=c.user_a===currentUser.id?c.user_b:c.user_a;const label=names[peer]?'@'+names[peer]:'Личный чат';const b=document.createElement('button');b.className='secondary';b.textContent='✉ '+label;b.prepend(lvkAvatar(label,peer));b.classList.add('person-line');b.dataset.dmId=c.id;b.dataset.peerId=peer;b.onclick=()=>openDirectChat(c.id,label,peer).catch(e=>chatInfo('Ошибка открытия: '+e.message));b.classList.toggle('selected',activeDirectChat?.id===c.id);box.append(b)});
+ visible.forEach(c=>{const peer=c.user_a===currentUser.id?c.user_b:c.user_a;const label=names[peer]?'@'+names[peer]:'Личный чат';const b=document.createElement('button');b.className='secondary';b.textContent='✉ '+label;b.prepend(lvkAvatar(label,peer));b.classList.add('person-line');b.dataset.dmId=c.id;b.dataset.peerId=peer;b.onclick=()=>openDirectChat(c.id,label,peer).catch(e=>chatInfo('Ошибка открытия: '+e.message));b.classList.toggle('selected',$('chatPage').classList.contains('lvk-thread-open') && activeDirectChat?.id===c.id);box.append(b)});
  if(!visible.length)box.textContent='Личных чатов пока нет';
 }
 async function openDirectWith(u){
@@ -180,7 +180,7 @@ async function refreshDirectMessages(){
  if(dmStates[c.id]?.cleared_at)query=query.gt('created_at',dmStates[c.id].cleared_at);
  const {data,error}=await query.order('created_at',{ascending:false}).limit(100);
  if(error){chatInfo('Ошибка личного чата: '+error.message);return}
- if(activeDirectChat?.id!==c.id)return;
+ if(activeDirectChat?.id!==c.id || !$('chatPage').classList.contains('lvk-thread-open'))return;
  const box=$('chatMessages');const scrollState=lvkRememberThreadScroll(box,'dm:'+c.id);box.replaceChildren();
  (data||[]).reverse().forEach(m=>{const div=document.createElement('div');div.style.cssText='background:#202a35;padding:10px;border-radius:10px;margin-bottom:8px;overflow-wrap:anywhere';const a=document.createElement('div');a.className='muted';a.textContent=(m.user_id===currentUser.id?'Вы':c.label)+' · '+new Date(m.created_at).toLocaleString('ru-RU');const body=document.createElement('div');body.textContent=m.message;div.append(lvkAvatar(m.user_id===currentUser.id?'Вы':c.label,m.user_id),a,body);div.classList.add('lvk-avatar-message','lvk-tg-bubble');div.classList.add(m.user_id===currentUser.id?'lvk-tg-own':'lvk-tg-other');box.append(div)});
  if(!data?.length)box.textContent='Начните переписку';lvkRestoreThreadScroll(box,scrollState);
@@ -233,13 +233,13 @@ async function loadChatGroups(){
  const box=$('chatGroups');box.replaceChildren();let groups=(data||[]).map(r=>r.chat_groups).filter(Boolean);
  groups.sort((a,b)=>Number(b.is_system)-Number(a.is_system));
  if(!groups.length){box.textContent='Пока нет групп';return}
- groups.forEach(group=>{let button=document.createElement('button');button.className='secondary'+(activeChatGroup?.id===group.id?' selected':'');button.textContent=(group.is_system?'★ ':'')+group.name;button.dataset.groupId=group.id;button.onclick=()=>openChatGroup(group).catch(e=>chatInfo(e.message));button.prepend(lvkAvatar(group.name));button.classList.add('person-line');box.appendChild(button)});
+ groups.forEach(group=>{let button=document.createElement('button');button.className='secondary'+($('chatPage').classList.contains('lvk-thread-open') && activeChatGroup?.id===group.id?' selected':'');button.textContent=(group.is_system?'★ ':'')+group.name;button.dataset.groupId=group.id;button.onclick=()=>openChatGroup(group).catch(e=>chatInfo(e.message));button.prepend(lvkAvatar(group.name));button.classList.add('person-line');box.appendChild(button)});
  // Do not automatically open a group when refreshing the chat list.
  // A conversation opens only after the user selects it.
 }
 async function refreshChatMessages(group){
  const {data,error}=await sb.from('chat_messages').select('id,user_id,message,created_at').eq('group_id',group.id).order('created_at',{ascending:false}).limit(100);
- if(error)throw error;if(activeChatGroup?.id===group.id){await fetchMessageNicknames(data||[]);renderChatMessages((data||[]).reverse());}
+ if(error)throw error;if(activeChatGroup?.id===group.id && $('chatPage').classList.contains('lvk-thread-open')){await fetchMessageNicknames(data||[]);if(activeChatGroup?.id===group.id && $('chatPage').classList.contains('lvk-thread-open'))renderChatMessages((data||[]).reverse());}
 }
 async function openChatGroup(group){
  if(!currentUser||!proActive)return;
@@ -606,7 +606,7 @@ if(lvkDeepLink.get('page')==='chatPage'){
  window.addEventListener('load',()=>{if(currentUser){switchShadowChatTab('groups');navigate('chatPage')}else setTimeout(()=>{if(currentUser){switchShadowChatTab('groups');navigate('chatPage')}},1800)},{once:true});
 }
 lvkLoadNotices();
-</script><script src="./lvk-top.js?v=1"></script><script src="./lvk-push-config.js"></script><script defer="" src="./lvk-push.js"></script>
+</script><script src="./lvk-top.js?v=1"></script><script src="./lvk-push-config.js?v=9"></script><script defer="" src="./lvk-push.js?v=9"></script>
 <!-- LVK premium messenger and More enhancements -->
 <div class="lvk-overlay" hidden="" id="lvkCreateModal" role="presentation">
 <div aria-labelledby="lvkCreateTitle" aria-modal="true" class="lvk-dialog" role="dialog">
@@ -648,4 +648,4 @@ if(event.data?.type==='lvk-buy-back'){if(typeof navigate==='function')navigate(p
 if(event.data?.type==='lvk-buy-height'){const h=Number(event.data.height);if(Number.isFinite(h)&&h>250&&h<5000)frame.style.height=Math.ceil(h+12)+'px';}
 });
 })();
-</script><script defer src="./lvk-chat-reference.js?v=3"></script><link rel="stylesheet" href="./lvk-chat-scroll-fix.css?v=1"><link rel="stylesheet" href="./lvk-chat-visibility.css?v=8"><script defer src="./lvk-chat-visibility.js?v=8"></script></body></html>
+</script><script defer src="./lvk-chat-reference.js?v=9"></script><link rel="stylesheet" href="./lvk-chat-scroll-fix.css?v=1"><link rel="stylesheet" href="./lvk-chat-visibility.css?v=9"><script defer src="./lvk-chat-visibility.js?v=9"></script></body></html>

@@ -12,7 +12,7 @@
  title.before(back);
  const mobileHead=document.createElement('div');mobileHead.className='lvk-chat-mobile-head';mobileHead.textContent='Общайся в группах и личных сообщениях';
  firstCard.insertBefore(mobileHead,firstCard.firstChild);
- const close=()=>page.classList.remove('lvk-thread-open');
+ const close=()=>{if(typeof window.lvkCloseConversation==='function')window.lvkCloseConversation();else page.classList.remove('lvk-thread-open');};
  back.addEventListener('click',close);
  // Existing handlers open conversations; only switch the mobile panel after their click.
  for(const box of [list,groups])box.addEventListener('click',e=>{

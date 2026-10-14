@@ -7,7 +7,7 @@ self.addEventListener('push',event=>{
   body:String(data.body||'Новое сообщение'),
   icon:new URL('./icon.png',self.location.href).href,
   badge:new URL('./icon.png',self.location.href).href,
-  tag:String(data.tag||'lvk'),
+  tag:String(data.tag||('lvk-'+Date.now())),
   data:{url,chatId:data.chatId||null},
   renotify:false
  };
