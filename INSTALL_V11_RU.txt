@@ -1,0 +1,11 @@
+LVK v11 — исправление отображения меню контактов и настроек групп
+
+1. В GitHub Desktop откройте Repository > Show in Explorer.
+2. Скопируйте ВСЕ файлы из папки LVK-main в корень репозитория, включая index.html, lvk-v11-repair.js, lvk-v11-repair.css. Подтвердите замену.
+3. Commit to main > Push origin; дождитесь зелёной отметки GitHub Actions.
+4. Откройте https://streamcheats-lab.github.io/LVK/lvk-v11-repair.js?v=11 — должен появиться JavaScript, а не 404.
+5. Обновите приложение; для PWA при необходимости удалите установленную старую версию и установите заново.
+6. Если SQL из v10 ещё не запускался, выполните LVK_GROUP_ADMIN_SETUP.sql в Supabase SQL Editor. Если SQL выдаст ошибку, пришлите текст.
+7. Войдите в streamcheats@gmail.com, откройте системную группу; кнопка «Настройки группы» появляется только при успешном ответе Supabase RPC lvk_can_manage_group.
+
+Проверено статически; работа с реальным Supabase требует проверки после публикации.

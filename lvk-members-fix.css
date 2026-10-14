@@ -1,0 +1,11 @@
+/* v12: keep participant list inside the conversation, including narrow screens */
+#chatPage #chatContent, #chatPage .chat-layout, #chatPage .chat-layout>.card {min-width:0;max-width:100%;}
+#chatPage #groupMembersPanel {box-sizing:border-box!important;position:relative!important;inset:auto!important;transform:none!important;width:100%!important;max-width:100%!important;min-width:0!important;max-height:min(45dvh,350px)!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;flex:0 1 auto!important;margin:8px 0!important;padding:12px!important;border:1px solid #4b3c70;border-radius:14px;background:#191827;}
+#chatPage .lvk-members-title {display:block;margin-bottom:9px;}
+#chatPage .lvk-members-list {display:flex;flex-direction:column;gap:4px;min-width:0;width:100%;}
+#chatPage .lvk-members-row {display:flex!important;align-items:center;gap:10px;width:100%;min-width:0;max-width:100%;padding:8px 6px;border-radius:10px;box-sizing:border-box;overflow:hidden;}
+#chatPage .lvk-members-row span {min-width:0;overflow-wrap:anywhere;word-break:break-word;}
+#chatPage #lvkGroupSettingsMembers {max-height:320px;overflow-y:auto;overflow-x:hidden;min-width:0;}
+#chatPage .lvk-group-member {min-width:0;max-width:100%;flex-wrap:wrap;}
+#chatPage .lvk-group-member button {flex-shrink:0;}
+@media(max-width:750px){#chatPage #groupMembersPanel{max-height:38dvh!important;padding:10px!important;}}

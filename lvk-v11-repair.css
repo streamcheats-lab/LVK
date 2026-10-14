@@ -1,0 +1,12 @@
+/* LVK v11: reliable contact menu and group settings */
+#contactsPage .contacts-row{display:flex!important;flex-wrap:nowrap!important;align-items:center;gap:12px;position:relative;overflow:visible!important}
+#contactsPage .contacts-row>span:not(.lvk-avatar){min-width:0;flex:1;overflow-wrap:anywhere}
+#contactsPage details.lvk-contact-menu{position:relative!important;margin-left:auto;flex:0 0 auto;z-index:3}
+#contactsPage details.lvk-contact-menu[open]{z-index:200}
+#contactsPage details.lvk-contact-menu>summary{display:grid;place-items:center;min-width:42px;min-height:42px;padding:4px 10px;cursor:pointer;font-size:25px;list-style:none}
+#contactsPage details.lvk-contact-menu>summary::-webkit-details-marker{display:none}
+#contactsPage details.lvk-contact-menu:not([open])>.contact-actions{display:none!important}
+#contactsPage details.lvk-contact-menu[open]>.contact-actions{display:flex!important;position:absolute!important;top:calc(100% + 5px);right:0;flex-direction:column!important;flex-wrap:nowrap!important;min-width:205px;padding:10px;border-radius:13px;background:#231d32;border:1px solid #5d4a79;box-shadow:0 16px 30px #000a}
+#contactsPage details.lvk-contact-menu[open]>.contact-actions button{display:block!important;width:100%;text-align:left;white-space:nowrap}
+#lvkGroupSettingsButton{white-space:nowrap}
+#lvkGroupSettings:not([hidden]){display:block!important}
