@@ -60,9 +60,9 @@
  function updatePresenceUI(){
   document.querySelectorAll('#dmChats [data-peer-id]').forEach(button=>{
    let status=button.querySelector('.lvk-user-status');if(!status){status=document.createElement('span');status.className='lvk-user-status';button.append(status)}
-   const online=onlineIds.has(button.dataset.peerId);status.textContent=online?'● В сети':'○ Не в сети';status.classList.toggle('online',online);
+   const online=onlineIds.has(button.dataset.peerId);status.textContent=online?'✓ В сети':'✕ Не в сети';status.classList.toggle('online',online);
   });
-  const badge=$('lvkChatPresence');if(badge&&!badge.hidden){const online=onlineIds.has(badge.dataset.peer);badge.textContent=online?'● В сети':'○ Не в сети';badge.classList.toggle('online',online)}
+  const badge=$('lvkChatPresence');if(badge&&!badge.hidden){const online=onlineIds.has(badge.dataset.peer);badge.textContent=online?'✓ В сети':'✕ Не в сети';badge.classList.toggle('online',online)}
  }
  const listObserver=new MutationObserver(()=>updatePresenceUI());listObserver.observe($('dmChats'),{childList:true});
  async function ensurePresence(){

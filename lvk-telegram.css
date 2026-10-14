@@ -1,0 +1,27 @@
+/* LVK chat redesign: Telegram-inspired dark mobile interface */
+#chatPage.lvk-premium-chat{--tg-bg:#080e19;--tg-card:#0e1828;--tg-border:#23304a;--tg-purple:#8756ff}
+#chatPage.lvk-premium-chat .title{font-size:clamp(25px,4vw,34px);letter-spacing:-.035em;margin-bottom:5px}
+#chatPage .lvk-chat-intro{font-size:13px;color:#8795ad;margin-bottom:18px}
+#chatPage.lvk-premium-chat .chat-layout{grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:14px;align-items:start}
+#chatPage.lvk-premium-chat .chat-layout>.card{background:linear-gradient(155deg,#0e1929,#080e1a)!important;border:1px solid var(--tg-border)!important;border-radius:23px!important;padding:17px!important;box-shadow:0 18px 40px #0003}
+#chatPage.lvk-premium-chat .chat-layout>.card h3{font-size:16px;letter-spacing:-.02em}
+#chatPage.lvk-premium-chat #dmChats,#chatPage.lvk-premium-chat #chatGroups{gap:8px;max-height:none}
+#chatPage.lvk-premium-chat #dmChats>button,#chatPage.lvk-premium-chat #chatGroups>button{background:#111e31!important;border:1px solid #1c2940!important;border-radius:15px!important;min-height:67px!important;padding:12px 12px!important;color:#eef1ff!important;font-size:14px;font-weight:650;box-shadow:none!important}
+#chatPage.lvk-premium-chat #dmChats>button.selected,#chatPage.lvk-premium-chat #chatGroups>button.selected{background:#25234b!important;border-color:#7456dd!important;box-shadow:inset 3px 0 #885cff!important}
+#chatPage.lvk-premium-chat #dmChats .lvk-user-status{margin:5px 0 0 50px!important;color:#f09ba9;font-size:11px;font-weight:650}
+#chatPage.lvk-premium-chat #dmChats .lvk-user-status.online{color:#36dbad}
+#chatPage.lvk-premium-chat .chat-messages{height:min(55vh,560px)!important;max-height:none!important;min-height:310px!important;background:radial-gradient(ellipse at top,#151a32 0%,#080f1e 75%)!important;border:1px solid #222c44!important;border-radius:18px!important;padding:17px 12px!important;display:flex;flex-direction:column;gap:9px}
+#chatPage.lvk-premium-chat .chat-messages>.lvk-tg-bubble{width:fit-content;max-width:min(88%,480px)!important;margin:0!important;padding:11px 14px!important;border-radius:17px 17px 17px 5px!important;background:#17253a!important;border:1px solid #233550!important;box-shadow:0 5px 16px #0002!important;flex-shrink:0;line-height:1.5}
+#chatPage.lvk-premium-chat .chat-messages>.lvk-tg-own{align-self:flex-end;background:#30235c!important;border-color:#493b87!important;border-radius:17px 17px 5px 17px!important}
+#chatPage.lvk-premium-chat .lvk-tg-bubble .muted{font-size:10px!important;color:#9da9c2!important;margin-bottom:4px}
+#chatPage.lvk-premium-chat .chat-compose{display:flex;align-items:center;background:#101b2d!important;border:1px solid #293754!important;border-radius:24px!important;padding:5px 5px 5px 11px!important;gap:5px}
+#chatPage.lvk-premium-chat .chat-compose input{background:transparent!important;border:0!important;outline:0!important;font-size:14px;min-height:40px}
+#chatPage.lvk-premium-chat #sendChatButton{border-radius:50%!important;width:44px;height:44px;min-width:44px;padding:0!important;font-size:20px;background:linear-gradient(135deg,#a05cff,#545bff)!important}
+#chatPage.lvk-premium-chat #chatTitle{font-size:16px!important;margin:0!important}
+#chatPage.lvk-premium-chat #lvkChatPresence{color:#e998a6;font-size:12px;font-weight:650}
+#chatPage.lvk-premium-chat #lvkChatPresence.online{color:#36dba5}
+#chatPage.lvk-premium-chat .chat-head button{font-size:12px!important;min-height:37px!important;padding:8px 10px!important}
+#chatPage.lvk-premium-chat .lvk-new-group{background:#111e31!important;border:1px solid #2c3652!important;border-radius:15px!important;box-shadow:none!important}
+#chatPage.lvk-premium-chat .lvk-remove-contact{border-color:#5b3b51!important;color:#ff9ba9!important}
+#chatPage.lvk-premium-chat .chat-tools input{border-radius:13px!important;background:#0b1423!important}
+@media(max-width:750px){#chatPage.lvk-premium-chat .chat-layout{grid-template-columns:minmax(0,1fr)}#chatPage.lvk-premium-chat .chat-layout>.card{padding:13px!important;border-radius:20px!important}#chatPage.lvk-premium-chat .chat-messages{height:350px!important;min-height:270px!important}#chatPage.lvk-premium-chat .chat-head{gap:5px}#chatPage.lvk-premium-chat .chat-head button{font-size:11px!important}#chatPage.lvk-premium-chat #dmChats,#chatPage.lvk-premium-chat #chatGroups{overflow:visible}}
