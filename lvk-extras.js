@@ -23,6 +23,21 @@
  supportCard.append(supportHeader,supportContent);moreTitle.after(supportCard);
  $('chatTabSupport').style.display='none';$('chatTabGroups').textContent='Чаты и группы';
  $('chatPage').classList.add('lvk-premium-chat');
+ // Telegram-style quick search filters already loaded groups and personal dialogs.
+ const chatListCard=$('dmChats')?.closest('.card');
+ if(chatListCard){
+  const search=document.createElement('input');search.type='search';search.className='lvk-tg-search';
+  search.placeholder='⌕  Поиск групп и чатов...';search.setAttribute('aria-label','Поиск групп и чатов');
+  chatListCard.insertBefore(search,chatListCard.firstChild);
+  const apply=()=>{const q=search.value.trim().toLocaleLowerCase('ru');
+   for(const id of ['dmChats','chatGroups']) for(const el of $(id)?.querySelectorAll('button')||[])
+    el.hidden=!!q&&!el.textContent.toLocaleLowerCase('ru').includes(q);
+  };
+  search.addEventListener('input',apply);
+  new MutationObserver(apply).observe($('dmChats'),{childList:true});
+  new MutationObserver(apply).observe($('chatGroups'),{childList:true});
+ }
+
  const tools=$('newGroupName').closest('.chat-tools');
  tools.classList.add('lvk-create-trigger');
  $('newGroupName').style.display='none';
