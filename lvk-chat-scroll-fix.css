@@ -1,0 +1,33 @@
+/* LVK: Telegram-like fixed conversation viewport, scroll messages only. */
+#chatPage.lvk-premium-chat #chatContent>.chat-layout>.card:nth-child(2){
+  display:flex;flex-direction:column;min-width:0;min-height:0;
+  height:min(740px,calc(100dvh - 155px));max-height:740px;overflow:hidden;
+}
+#chatPage.lvk-premium-chat .chat-head,
+#chatPage.lvk-premium-chat .chat-compose,
+#chatPage.lvk-premium-chat .chat-tools,
+#chatPage.lvk-premium-chat #groupAddPanel,
+#chatPage.lvk-premium-chat #groupMembersPanel{flex-shrink:0}
+#chatPage.lvk-premium-chat #chatMessages{
+  display:flex!important;flex-direction:column!important;
+  flex:1 1 0!important;min-height:0!important;max-height:none!important;
+  height:auto!important;overflow-y:auto!important;overflow-x:hidden!important;
+  overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;scrollbar-color:#414067 transparent;
+  overflow-anchor:none;
+}
+#chatPage.lvk-premium-chat #chatMessages>.lvk-tg-bubble{flex-shrink:0}
+#chatPage.lvk-premium-chat .chat-compose{margin-top:8px!important}
+@media(max-width:750px){
+ #chatPage.lvk-premium-chat.lvk-thread-open{min-height:0!important}
+ #chatPage.lvk-premium-chat.lvk-thread-open #chatContent>.chat-layout>.card:nth-child(2){
+   display:flex!important;flex-direction:column!important;
+   height:calc(100dvh - 185px)!important;
+   max-height:calc(100dvh - 185px)!important;
+   min-height:330px!important;overflow:hidden!important;
+ }
+ #chatPage.lvk-premium-chat.lvk-thread-open #chatMessages{
+   flex:1 1 0!important;min-height:0!important;max-height:none!important;height:auto!important;
+   overflow-y:auto!important;touch-action:pan-y;
+ }
+}

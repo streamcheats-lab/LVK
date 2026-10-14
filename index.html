@@ -149,6 +149,19 @@ async function openDirectChat(id,label,peer){
  directRealtime=sb.channel('shadow-dm-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'shadow_direct_messages',filter:'chat_id=eq.'+id},()=>refreshDirectMessages()).subscribe();
  chatInfo('Личная переписка · LVK PRO');
 }
+// Preserve the user's position when Supabase refreshes a conversation.
+// Auto-scroll only on first open or when the reader is already near the bottom.
+function lvkRememberThreadScroll(box,key){
+ const same=box.dataset.renderThread===key;
+ const bottom=box.scrollHeight-box.scrollTop-box.clientHeight;
+ const state={same,nearBottom:!same||bottom<90,top:box.scrollTop};
+ box.dataset.renderThread=key;
+ return state;
+}
+function lvkRestoreThreadScroll(box,state){
+ if(state.nearBottom)box.scrollTop=box.scrollHeight;
+ else box.scrollTop=state.top;
+}
 async function refreshDirectMessages(){
  const c=activeDirectChat;if(!c)return;
  let query=sb.from('shadow_direct_messages').select('id,user_id,message,created_at').eq('chat_id',c.id);
@@ -156,9 +169,9 @@ async function refreshDirectMessages(){
  const {data,error}=await query.order('created_at',{ascending:false}).limit(100);
  if(error){chatInfo('Ошибка личного чата: '+error.message);return}
  if(activeDirectChat?.id!==c.id)return;
- const box=$('chatMessages');box.replaceChildren();
+ const box=$('chatMessages');const scrollState=lvkRememberThreadScroll(box,'dm:'+c.id);box.replaceChildren();
  (data||[]).reverse().forEach(m=>{const div=document.createElement('div');div.style.cssText='background:#202a35;padding:10px;border-radius:10px;margin-bottom:8px;overflow-wrap:anywhere';const a=document.createElement('div');a.className='muted';a.textContent=(m.user_id===currentUser.id?'Вы':c.label)+' · '+new Date(m.created_at).toLocaleString('ru-RU');const body=document.createElement('div');body.textContent=m.message;div.append(lvkAvatar(m.user_id===currentUser.id?'Вы':c.label,m.user_id),a,body);div.classList.add('lvk-avatar-message','lvk-tg-bubble');div.classList.add(m.user_id===currentUser.id?'lvk-tg-own':'lvk-tg-other');box.append(div)});
- if(!data?.length)box.textContent='Начните переписку';box.scrollTop=box.scrollHeight;
+ if(!data?.length)box.textContent='Начните переписку';lvkRestoreThreadScroll(box,scrollState);
 }
 async function sendDirectMessage(){
  const c=activeDirectChat;const input=$('chatMessageInput');const message=input.value.trim();if(!c||!message)return;
@@ -221,9 +234,9 @@ async function fetchMessageNicknames(messages){
  if(!error)(data||[]).forEach(p=>nicknameCache[p.user_id]=p.nickname);
 }
 function renderChatMessages(messages){
- const box=$('chatMessages');box.replaceChildren();
+ const box=$('chatMessages');const scrollState=lvkRememberThreadScroll(box,'group:'+(activeChatGroup?.id||''));box.replaceChildren();
  if(!messages.length){box.textContent='Сообщений пока нет. Напиши первым!';return}
- messages.forEach(item=>{const div=document.createElement('div');div.style.cssText='background:#202a35;padding:10px;border-radius:10px;margin-bottom:8px;overflow-wrap:anywhere';const author=document.createElement('div');author.className='muted';author.textContent=(item.user_id===currentUser?.id?'Вы':(nicknameCache[item.user_id]?'@'+nicknameCache[item.user_id]:'Участник'))+' · '+new Date(item.created_at).toLocaleString('ru-RU');const body=document.createElement('div');body.textContent=item.message;div.append(lvkAvatar(item.user_id===currentUser?.id?'Вы':(nicknameCache[item.user_id]||'Участник'),item.user_id),author,body);div.classList.add('lvk-avatar-message','lvk-tg-bubble');div.classList.add(item.user_id===currentUser?.id?'lvk-tg-own':'lvk-tg-other');box.appendChild(div)});box.scrollTop=box.scrollHeight;
+ messages.forEach(item=>{const div=document.createElement('div');div.style.cssText='background:#202a35;padding:10px;border-radius:10px;margin-bottom:8px;overflow-wrap:anywhere';const author=document.createElement('div');author.className='muted';author.textContent=(item.user_id===currentUser?.id?'Вы':(nicknameCache[item.user_id]?'@'+nicknameCache[item.user_id]:'Участник'))+' · '+new Date(item.created_at).toLocaleString('ru-RU');const body=document.createElement('div');body.textContent=item.message;div.append(lvkAvatar(item.user_id===currentUser?.id?'Вы':(nicknameCache[item.user_id]||'Участник'),item.user_id),author,body);div.classList.add('lvk-avatar-message','lvk-tg-bubble');div.classList.add(item.user_id===currentUser?.id?'lvk-tg-own':'lvk-tg-other');box.appendChild(div)});lvkRestoreThreadScroll(box,scrollState);
 }
 async function sendChatMessage(){
  if(!currentUser||!proActive||!activeChatGroup){chatInfo('Войди в аккаунт, активируй PRO и выбери группу.');return}
@@ -366,7 +379,7 @@ async function searchShadowUsers(){
   const row=document.createElement('div');row.className='dm-result';
   const nick=document.createElement('strong');nick.textContent='@'+u.nickname;const avatar=lvkAvatar(u.nickname,u.user_id);const actions=document.createElement('div');actions.className='lvk-search-actions';
   const btn=document.createElement('button');btn.type='button';btn.className='primary';btn.textContent='Написать';
-  btn.onclick=async()=>{btn.disabled=true;try{switchShadowChatTab('groups');navigate('chatPage');await initShadowChat();await openDirectWith(u);$('nicknameSearch').value='';$('nicknameResult').textContent='Чат открыт';$('chatMessages').scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){chatInfo('Не удалось открыть личный чат: '+e.message)}finally{btn.disabled=false}};const add=document.createElement('button');add.type='button';add.className='secondary';add.textContent=shadowContacts.some(x=>x.contact_id===u.user_id)?'Удалить':'＋ Контакт';add.onclick=async()=>{add.disabled=true;try{const saved=shadowContacts.some(x=>x.contact_id===u.user_id);if(saved){const {error}=await sb.from('shadow_contacts').delete().eq('owner_id',currentUser.id).eq('contact_id',u.user_id);if(error)throw error}else{await saveShadowContact(u.user_id,u.nickname)}await loadShadowContacts();add.textContent=shadowContacts.some(x=>x.contact_id===u.user_id)?'Удалить':'＋ Контакт';chatInfo(saved?'Контакт удалён':'Контакт добавлен')}catch(e){chatInfo('Ошибка контакта: '+e.message)}finally{add.disabled=false}};actions.append(btn,add);row.append(avatar,nick,actions);box.append(row);
+  btn.onclick=async()=>{btn.disabled=true;try{switchShadowChatTab('groups');navigate('chatPage');await initShadowChat();await openDirectWith(u);$('nicknameSearch').value='';$('nicknameResult').textContent='Чат открыт';/* Переписка прокручивается внутри окна, не страница */}catch(e){chatInfo('Не удалось открыть личный чат: '+e.message)}finally{btn.disabled=false}};const add=document.createElement('button');add.type='button';add.className='secondary';add.textContent=shadowContacts.some(x=>x.contact_id===u.user_id)?'Удалить':'＋ Контакт';add.onclick=async()=>{add.disabled=true;try{const saved=shadowContacts.some(x=>x.contact_id===u.user_id);if(saved){const {error}=await sb.from('shadow_contacts').delete().eq('owner_id',currentUser.id).eq('contact_id',u.user_id);if(error)throw error}else{await saveShadowContact(u.user_id,u.nickname)}await loadShadowContacts();add.textContent=shadowContacts.some(x=>x.contact_id===u.user_id)?'Удалить':'＋ Контакт';chatInfo(saved?'Контакт удалён':'Контакт добавлен')}catch(e){chatInfo('Ошибка контакта: '+e.message)}finally{add.disabled=false}};actions.append(btn,add);row.append(avatar,nick,actions);box.append(row);
  });
  if(!box.children.length)box.textContent='Другие пользователи не найдены';
 }
@@ -403,7 +416,7 @@ async function loadShadowContacts(){
   const actions=document.createElement('div');actions.className='contact-actions';
   const isBlocked=blockedIds.has(c.contact_id);
   const write=document.createElement('button');write.type='button';write.className='primary';write.textContent=isBlocked?'Заблокирован':'Написать';write.disabled=isBlocked;
-  write.onclick=async()=>{write.disabled=true;try{switchShadowChatTab('groups');navigate('chatPage');await initShadowChat();await openDirectWith({user_id:c.contact_id,nickname:c.nickname});$('chatMessages').scrollIntoView({block:'nearest',behavior:'smooth'});}catch(e){info.textContent='Не удалось открыть чат: '+e.message;chatInfo('Ошибка: '+e.message)}finally{write.disabled=false}};
+  write.onclick=async()=>{write.disabled=true;try{switchShadowChatTab('groups');navigate('chatPage');await initShadowChat();await openDirectWith({user_id:c.contact_id,nickname:c.nickname});/* Переписка прокручивается внутри окна, не страница */;}catch(e){info.textContent='Не удалось открыть чат: '+e.message;chatInfo('Ошибка: '+e.message)}finally{write.disabled=false}};
   const rename=document.createElement('button');rename.type='button';rename.className='secondary';rename.textContent='Изменить имя';
   rename.onclick=async()=>{try{await saveShadowContact(c.contact_id,c.nickname);await loadShadowContacts()}catch(e){info.textContent=e.message}};
   const remove=document.createElement('button');remove.type='button';remove.className='secondary';remove.textContent='Удалить контакт';remove.classList.add('lvk-delete-contact');
@@ -603,4 +616,4 @@ if(event.data?.type==='lvk-buy-back'){if(typeof navigate==='function')navigate(p
 if(event.data?.type==='lvk-buy-height'){const h=Number(event.data.height);if(Number.isFinite(h)&&h>250&&h<5000)frame.style.height=Math.ceil(h+12)+'px';}
 });
 })();
-</script><script defer src="./lvk-chat-reference.js?v=3"></script></body></html>
+</script><script defer src="./lvk-chat-reference.js?v=3"></script><link rel="stylesheet" href="./lvk-chat-scroll-fix.css?v=1"></body></html>
