@@ -115,16 +115,26 @@ async function blockCurrentDm(){
 $('dmDeleteButton').onclick=deleteCurrentDm;
 $('dmBlockButton').onclick=blockCurrentDm;
 
+let lvkDmRenderVersion=0;
+let lvkDmRenderedSignature='';
 async function loadDirectChats(){
- const box=$('dmChats');box.replaceChildren();
- if(!currentUser||!proActive)return;
+ const version=++lvkDmRenderVersion;
+ const box=$('dmChats');
+ if(!currentUser||!proActive){box.replaceChildren();lvkDmRenderedSignature='';return;}
  const {data,error}=await sb.from('shadow_direct_chats').select('id,user_a,user_b,created_at').or('user_a.eq.'+currentUser.id+',user_b.eq.'+currentUser.id).order('created_at',{ascending:false});
- if(error){box.textContent='Личные чаты: '+error.message;return}
+ if(version!==lvkDmRenderVersion)return;
+ if(error){if(!box.children.length)box.textContent='Личные чаты: '+error.message;return}
  await loadDmStates();
+ if(version!==lvkDmRenderVersion)return;
  const visible=(data||[]).filter(c=>!dmStates[c.id]?.hidden);
  const peers=visible.map(c=>c.user_a===currentUser.id?c.user_b:c.user_a);
  const {data:profiles}=peers.length?await sb.from('shadow_profiles').select('user_id,nickname').in('user_id',peers):{data:[]};
+ if(version!==lvkDmRenderVersion)return;
  const names=Object.fromEntries((profiles||[]).map(p=>[p.user_id,p.nickname]));
+ const signature=JSON.stringify(visible.map(c=>[c.id,c.user_a,c.user_b,names[c.user_a],names[c.user_b]]));
+ if(signature===lvkDmRenderedSignature){box.querySelectorAll('[data-dm-id]').forEach(b=>b.classList.toggle('selected',activeDirectChat?.id===b.dataset.dmId));return}
+ lvkDmRenderedSignature=signature;
+ box.replaceChildren();
  visible.forEach(c=>{const peer=c.user_a===currentUser.id?c.user_b:c.user_a;const label=names[peer]?'@'+names[peer]:'Личный чат';const b=document.createElement('button');b.className='secondary';b.textContent='✉ '+label;b.prepend(lvkAvatar(label,peer));b.classList.add('person-line');b.dataset.dmId=c.id;b.dataset.peerId=peer;b.onclick=()=>openDirectChat(c.id,label,peer).catch(e=>chatInfo('Ошибка открытия: '+e.message));b.classList.toggle('selected',activeDirectChat?.id===c.id);box.append(b)});
  if(!visible.length)box.textContent='Личных чатов пока нет';
 }
@@ -548,7 +558,11 @@ async function lvkPoll(){if(lvkPollBusy||!currentUser||!sb)return;lvkPollBusy=tr
  latest.forEach(x=>{next[x.chat.id]=x.m.id});
  fresh.forEach(x=>{const peer=x.chat.user_a===uid?x.chat.user_b:x.chat.user_a;lvkNotify(x.m.message||'Новое личное сообщение',{kind:'dm',chatId:x.chat.id,peer,label:names[peer]?'@'+names[peer]:'Личный чат',messageId:x.m.id})});
  lvkSeen.dm=next;lvkSeen.dmReady=true;
- if($('chatPage').classList.contains('active'))loadDirectChats().catch(console.error);
+ // Do not rebuild the conversation list every five seconds.
+ // Refresh only when the set of conversations has actually changed.
+ const chatIds=chats.map(c=>c.id).sort().join('|');
+ if(lvkSeen.dmChatIds!==undefined && lvkSeen.dmChatIds!==chatIds && $('chatPage').classList.contains('active'))loadDirectChats().catch(console.error);
+ lvkSeen.dmChatIds=chatIds;
  }
  }catch(e){console.warn('LVK notifications:',e)}finally{lvkPollBusy=false}}
 document.addEventListener('click',e=>{if(e.target.closest('.lvk-more-support > .lvk-more-link'))lvkMarkSupportRead()});
@@ -616,4 +630,4 @@ if(event.data?.type==='lvk-buy-back'){if(typeof navigate==='function')navigate(p
 if(event.data?.type==='lvk-buy-height'){const h=Number(event.data.height);if(Number.isFinite(h)&&h>250&&h<5000)frame.style.height=Math.ceil(h+12)+'px';}
 });
 })();
-</script><script defer src="./lvk-chat-reference.js?v=3"></script><link rel="stylesheet" href="./lvk-chat-scroll-fix.css?v=1"></body></html>
+</script><script defer src="./lvk-chat-reference.js?v=3"></script><link rel="stylesheet" href="./lvk-chat-scroll-fix.css?v=1"><link rel="stylesheet" href="./lvk-chat-visibility.css?v=6"><script defer src="./lvk-chat-visibility.js?v=6"></script></body></html>
